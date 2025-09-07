@@ -1,0 +1,3192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Empire DeFi Academy – Arbitrum Testnet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Web3.js -->
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+
+  <style>
+    :root{
+      --bg-1:#0c1622; --bg-2:#0f1b2a; --panel:#122237; --muted:#94a3b8;
+      --primary:#3b82f6; --success:#22c55e; --danger:#ef4444; --accent:#8b5cf6;
+      --text:#e5e7eb; --light:#cbd5e1;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:24px; color:var(--text); font-size: 16px; line-height: 1.5;
+      background:radial-gradient(1200px 600px at 70% -10%, #1b335a22 0%, transparent 60%) , linear-gradient(180deg,#0b1521 0%, #0c1622 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    @media (max-width: 768px) {
+      body { font-size: 18px; padding: 16px; }
+    }
+    a{color:var(--primary);text-decoration:none}
+    .wrap{max-width:1400px;margin:0 auto}
+    header{display:flex;align-items:center;gap:14px;justify-content:space-between;margin-bottom:14px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{font-weight:800;font-size:24px}
+    .badge{font-size:11px;padding:4px 8px;border-radius:999px;background:linear-gradient(45deg,var(--accent),var(--primary));}
+    .net-tag{font-size:12px;padding:6px 10px;border-radius:999px;background:#0c2138;border:1px solid #1f3653;display:flex;align-items:center;gap:8px}
+    .net-tag i{width:8px;height:8px;border-radius:999px;background:var(--success)}
+    .btn{cursor:pointer;border:1px solid #1f3653;background:#143055;color:#e5e7eb;padding:12px 16px;border-radius:10px;font-weight:700;transition:all 0.2s;font-size:15px}
+    @media (max-width: 768px) {
+      .btn { padding: 14px 18px; font-size: 16px; }
+    }
+    .btn:hover{filter:brightness(1.05);transform:translateY(-1px)}
+    .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+    .btn:focus{outline:2px solid var(--primary);outline-offset:2px}
+    .btn.primary{background:var(--primary);border-color:#3b82f6;color:#fff}
+    .btn.success{background:var(--success);border-color:#16a34a;color:#04140a}
+    .btn.danger{background:#b91c1c;border-color:#7f1d1d}
+    .btn.completed{background:var(--success);border-color:#16a34a;color:#fff;position:relative}
+    .btn.completed::after{content:'✓';position:absolute;right:8px;top:50%;transform:translateY(-50%)}
+    
+    .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+    @media (max-width:1000px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--panel);border:1px solid #1f3653;border-radius:14px;padding:16px}
+    .title{font-weight:800;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+    .muted{color:var(--muted)}
+    .row{display:flex;align-items:center;justify-content:space-between;background:#0e1e33;border:1px solid #193252;border-radius:10px;padding:10px;margin:8px 0}
+    .pill{font-size:12px;padding:4px 8px;border-radius:999px;background:#0f223b;border:1px solid #244469}
+    .pill.ok{background:#072a15;border-color:#1f6a3b;color:#86efac}
+    .stack{display:flex;flex-direction:column;gap:10px}
+    .list{display:flex;flex-direction:column;gap:8px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace}
+    .status{display:none;margin-top:10px;padding:10px;border-radius:10px;border:1px solid #244469;background:#0f223b}
+    .status.ok{display:block;border-color:#14532d;background:#0b2a18;color:#86efac}
+    .status.err{display:block;border-color:#7f1d1d;background:#2a1111;color:#fecaca}
+    
+    /* Progress Bar */
+    .progress-bar{background:#0e1e33;height:8px;border-radius:4px;overflow:hidden;margin:8px 0}
+    .progress-fill{background:linear-gradient(90deg,var(--accent),var(--primary));height:100%;transition:width 0.5s ease;border-radius:4px}
+    
+    /* Module Categories */
+    .category-section{margin-bottom:20px}
+    .category-header{
+      display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:12px;
+      background:#0e1e33;border:1px solid #244469;border-radius:10px
+    }
+    .category-icon{
+      width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+      justify-content:center;font-size:18px;background:var(--primary)
+    }
+    .category-icon.fundamentals{background:var(--accent)}
+    .category-icon.advanced{background:#f59e0b}
+    .category-title{font-weight:800;font-size:18px}
+    .category-desc{color:var(--muted);font-size:14px;margin-left:auto;max-width:300px}
+    
+    /* Module Grid */
+    .modules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+    .module-card{
+      background:#0e1e33;border:1px solid #244469;border-radius:10px;padding:14px;
+      transition:all 0.2s;cursor:pointer;position:relative
+    }
+    .module-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+    .module-card.completed{border-color:var(--success);background:#0b2a18}
+    .module-card.locked{opacity:0.6;cursor:not-allowed}
+    .module-title{font-weight:700;font-size:16px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+    .module-meta{display:flex;gap:8px;margin-bottom:8px;font-size:12px}
+    .difficulty{padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600}
+    .difficulty.beginner{background:#0b2a18;color:#86efac;border:1px solid #1f6a3b}
+    .difficulty.intermediate{background:#2a1f0a;color:#fbbf24;border:1px solid #92400e}
+    .difficulty.advanced{background:#2a1111;color:#fecaca;border:1px solid #7f1d1d}
+    .module-desc{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.4}
+    .module-status{position:absolute;top:12px;right:12px;font-size:16px}
+    
+    /* Success Celebration */
+    .celebration{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel);border:2px solid var(--success);border-radius:16px;padding:20px;text-align:center;z-index:1000;display:none}
+    .celebration.active{display:block;animation:celebrateIn 0.5s ease-out}
+    @keyframes celebrateIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.8)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+    
+    /* Quest Card */
+    .quest-card{background:#0e1e33;border:1px solid #244469;border-radius:10px;padding:12px;margin:6px 0}
+    .quest-title{font-weight:700;margin-bottom:4px;color:var(--primary)}
+    .quest-desc{font-size:14px;color:var(--muted);margin-bottom:8px}
+    .quest-rewards{font-size:12px;color:var(--success);margin-bottom:8px}
+    .quest-meta{display:flex;gap:8px;margin-bottom:8px}
+    .quest-tag{font-size:11px;padding:2px 6px;border-radius:4px;background:#1f3653}
+    
+    /* Analytics Display */
+    .analytics{display:none;position:fixed;bottom:20px;right:20px;background:var(--panel);border:1px solid #244469;border-radius:12px;padding:18px;font-size:14px;max-width:320px;min-width:280px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+    @media (max-width: 768px) {
+      .analytics { 
+        bottom: 10px; right: 10px; left: 10px; max-width: none; min-width: none;
+        font-size: 15px; padding: 20px;
+      }
+    }
+    
+    /* Modal */
+    .modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+    .modal.active{display:flex}
+    .modal-inner{max-width:800px;width:100%;background:var(--panel);border:1px solid #244469;border-radius:16px;overflow:hidden;max-height:90vh}
+    .modal-h{padding:16px 18px;border-bottom:1px solid #203d61}
+    .modal-b{padding:18px;max-height:70vh;overflow-y:auto}
+    .modal-f{padding:14px 18px;border-top:1px solid #203d61;display:flex;gap:10px;justify-content:flex-end}
+    
+    /* Quiz Styles */
+    .quiz{margin-top:20px}
+    .quiz .opt{padding:14px;border:1px solid #203d61;border-radius:10px;background:#0f2137;margin:8px 0;cursor:pointer;transition:all 0.2s;font-size:15px}
+    .quiz .opt:hover{background:#15305c;border-color:var(--primary)}
+    .quiz .opt.selected{border-color:var(--primary);background:#15305c}
+    .quiz .opt.correct{border-color:#1f6a3b;background:#0b2a18;color:#86efac}
+    .quiz .opt.incorrect{border-color:#7f1d1d;background:#2a1111;color:#fecaca}
+    .quiz-explanation{
+      background:#0e1e33;padding:12px;border-radius:8px;margin-top:10px;
+      border-left:4px solid var(--primary);display:none
+    }
+    
+    /* Content Styling */
+    .lesson-content{line-height:1.6}
+    .lesson-content h3{color:var(--primary);margin:20px 0 12px 0;font-size:18px}
+    .lesson-content h4{color:var(--text);margin:16px 0 8px 0;font-size:16px}
+    .concept-box{
+      background:#0e1e33;border-left:4px solid var(--primary);padding:16px;
+      margin:16px 0;border-radius:0 8px 8px 0
+    }
+    .example-box{
+      background:#1a2332;border:1px solid #2a3b4f;padding:12px;
+      margin:12px 0;border-radius:6px;font-style:italic
+    }
+    .example-box::before{
+      content:"💡 Example: ";font-weight:bold;font-style:normal;color:var(--primary)
+    }
+    .takeaways{
+      background:#0b2a18;border:1px solid #1f6a3b;padding:16px;
+      border-radius:8px;margin:16px 0
+    }
+    .takeaways h4{color:#86efac;margin-bottom:12px}
+    .takeaways ul{list-style:none;padding:0}
+    .takeaways li{padding:4px 0;padding-left:20px;position:relative;color:#86efac}
+    .takeaways li::before{content:"✓";position:absolute;left:0;color:var(--success);font-weight:bold}
+    
+    /* Loading states */
+    .loading{position:relative;overflow:hidden}
+    .loading::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);animation:loading 1.5s infinite}
+    @keyframes loading{to{left:100%}}
+    
+    footer{margin-top:10px;opacity:.7;font-size:12px;text-align:center}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <!-- Language Bar - Very Prominent -->
+  <div style="background:#3b82f6;color:white;padding:8px;text-align:center;margin-bottom:10px;border-radius:8px">
+    <span style="margin-right:15px;font-weight:bold">Choose Language:</span>
+    <button onclick="changeLanguage('en')" style="margin:0 5px;padding:6px 12px;border:none;background:white;color:#3b82f6;border-radius:4px;cursor:pointer;font-weight:bold">🇺🇸 English</button>
+    <button onclick="changeLanguage('es')" style="margin:0 5px;padding:6px 12px;border:none;background:rgba(255,255,255,0.2);color:white;border-radius:4px;cursor:pointer;font-weight:bold">🇪🇸 Español</button>
+    <button onclick="changeLanguage('fr')" style="margin:0 5px;padding:6px 12px;border:none;background:rgba(255,255,255,0.2);color:white;border-radius:4px;cursor:pointer;font-weight:bold">🇫🇷 Français</button>
+    <button onclick="changeLanguage('pt')" style="margin:0 5px;padding:6px 12px;border:none;background:rgba(255,255,255,0.2);color:white;border-radius:4px;cursor:pointer;font-weight:bold">🇧🇷 Português</button>
+    <button onclick="changeLanguage('hi')" style="margin:0 5px;padding:6px 12px;border:none;background:rgba(255,255,255,0.2);color:white;border-radius:4px;cursor:pointer;font-weight:bold">🇮🇳 हिंदी</button>
+  </div>
+
+  <header>
+    <div class="brand">
+      <div class="logo">Empire DeFi Academy</div>
+      <div class="badge">Learn • Practice • Master</div>
+    </div>
+    <div class="net-tag"><i></i> Arbitrum Sepolia</div>
+    <div class="stack" style="flex-direction:row;gap:8px">
+      <button id="btnConnect" class="btn primary">Connect Wallet</button>
+      <button id="btnDisconnect" class="btn danger" style="display:none">Disconnect</button>
+    </div>
+  </header>
+
+  <!-- Overview with Progress -->
+  <section class="card" style="margin-bottom:12px">
+    <div class="title">
+      <div>Your Learning Journey</div>
+      <div class="pill" id="overallPct">0% complete</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="muted">Comprehensive DeFi education with hands-on practice on Arbitrum testnet.</div>
+  </section>
+
+  <div class="grid">
+    <!-- LEFT: Profile + Portfolio -->
+    <div class="stack">
+      <section class="card">
+        <div class="title">Your Empire Profile</div>
+        <div class="row"><div>Has Profile?</div><div class="pill" id="hasProfile">Connect</div></div>
+        <div class="row"><div>Level</div><div id="profLevel">—</div></div>
+        <div class="row"><div>Experience</div><div id="profXP">—</div></div>
+        <div class="row"><div>Quests Completed</div><div id="profQuests">—</div></div>
+        <div class="row"><div>Empire Type</div><div id="profType">—</div></div>
+        <div class="row"><div>Modules Completed</div><div id="profModules">0/8</div></div>
+      </section>
+
+      <section class="card">
+        <div class="title">
+          <div>Your Portfolio</div>
+          <button id="btnRefresh" class="btn">Refresh</button>
+        </div>
+        <div class="row"><div><b>Ethereum</b><div class="muted" style="font-size:12px">Test ETH</div></div><div class="mono" id="ethBal">0.0000</div></div>
+        <div class="row"><div><b>EMPIRE</b><div class="muted" style="font-size:12px">Learning rewards</div></div><div class="mono" id="empBal">0.00</div></div>
+      </section>
+    </div>
+
+    <!-- MIDDLE: Learning Modules -->
+    <div class="stack">
+      <!-- Core Blockchain -->
+      <section class="card category-section">
+        <div class="category-header">
+          <div class="category-icon">🔗</div>
+          <div>
+            <div class="category-title">Core Blockchain</div>
+            <div class="category-desc">Master the fundamentals</div>
+          </div>
+        </div>
+        <div class="modules-grid">
+          <div class="module-card" data-module="wallets">
+            <div class="module-status" id="status-wallets"></div>
+            <div class="module-title">💛 Digital Wallets & Keys</div>
+            <div class="module-meta">
+              <span class="difficulty beginner">Beginner</span>
+              <span>⏱️ 15 min</span>
+            </div>
+            <div class="module-desc">Your gateway to the blockchain</div>
+          </div>
+          <div class="module-card" data-module="networks">
+            <div class="module-status" id="status-networks"></div>
+            <div class="module-title">🌐 Blockchain Networks</div>
+            <div class="module-meta">
+              <span class="difficulty beginner">Beginner</span>
+              <span>⏱️ 18 min</span>
+            </div>
+            <div class="module-desc">How decentralized consensus works</div>
+          </div>
+          <div class="module-card" data-module="gas">
+            <div class="module-status" id="status-gas"></div>
+            <div class="module-title">⛽ Transactions & Gas</div>
+            <div class="module-meta">
+              <span class="difficulty beginner">Beginner</span>
+              <span>⏱️ 20 min</span>
+            </div>
+            <div class="module-desc">Understanding blockchain costs</div>
+          </div>
+          <div class="module-card" data-module="contracts">
+            <div class="module-status" id="status-contracts"></div>
+            <div class="module-title">📜 Smart Contracts</div>
+            <div class="module-meta">
+              <span class="difficulty intermediate">Intermediate</span>
+              <span>⏱️ 22 min</span>
+            </div>
+            <div class="module-desc">Self-executing programs</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DeFi Fundamentals -->
+      <section class="card category-section">
+        <div class="category-header">
+          <div class="category-icon fundamentals">💰</div>
+          <div>
+            <div class="category-title">DeFi Fundamentals</div>
+            <div class="category-desc">Core financial protocols</div>
+          </div>
+        </div>
+        <div class="modules-grid">
+          <div class="module-card" data-module="tokens">
+            <div class="module-status" id="status-tokens"></div>
+            <div class="module-title">🪙 Tokens & Standards</div>
+            <div class="module-meta">
+              <span class="difficulty intermediate">Intermediate</span>
+              <span>⏱️ 20 min</span>
+            </div>
+            <div class="module-desc">Digital assets and their types</div>
+          </div>
+          <div class="module-card" data-module="dex">
+            <div class="module-status" id="status-dex"></div>
+            <div class="module-title">🔄 Decentralized Exchanges</div>
+            <div class="module-meta">
+              <span class="difficulty intermediate">Intermediate</span>
+              <span>⏱️ 25 min</span>
+            </div>
+            <div class="module-desc">Trading without intermediaries</div>
+          </div>
+          <div class="module-card" data-module="lending">
+            <div class="module-status" id="status-lending"></div>
+            <div class="module-title">🏦 Lending & Borrowing</div>
+            <div class="module-meta">
+              <span class="difficulty intermediate">Intermediate</span>
+              <span>⏱️ 25 min</span>
+            </div>
+            <div class="module-desc">Credit without banks</div>
+          </div>
+          <div class="module-card" data-module="yield">
+            <div class="module-status" id="status-yield"></div>
+            <div class="module-title">🚀 Yield Farming</div>
+            <div class="module-meta">
+              <span class="difficulty advanced">Advanced</span>
+              <span>⏱️ 30 min</span>
+            </div>
+            <div class="module-desc">Advanced yield strategies</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- RIGHT: Actions + Quests + Help -->
+    <div class="stack">
+      <section class="card">
+        <div class="title">Get Started</div>
+        <div class="row"><div>Registered?</div><div class="pill" id="isReg">Connect wallet</div></div>
+        <div class="row"><div>Daily Bonus</div><div class="pill" id="dailyAvail">Connect wallet</div></div>
+        <div class="row"><div>Next Bonus In</div><div id="cooldown">—</div></div>
+        <div class="stack" style="margin-top:8px">
+          <button id="btnRegister" class="btn primary" disabled>📝 Register</button>
+          <button id="btnDaily" class="btn success" disabled>🎁 Claim Daily Bonus</button>
+          <button id="btnAddToken" class="btn">➕ Add EMPIRE to MetaMask</button>
+        </div>
+        <div id="actionMsg" class="status"></div>
+      </section>
+
+      <section class="card">
+        <div class="title">Available Quests <button id="btnReloadQuests" class="btn" style="padding:6px 10px">Reload</button></div>
+        <div id="questsBox" class="muted">Connect wallet to load quests…</div>
+      </section>
+
+      <section class="card">
+        <div class="title">Help & Resources</div>
+
+        <div class="muted" style="margin:6px 0 4px">Don't have a wallet?</div>
+        <div class="stack" style="flex-direction:row;flex-wrap:wrap;gap:8px">
+          <a class="btn" target="_blank" href="https://metamask.io/download/">Install MetaMask</a>
+          <a class="btn" target="_blank" href="https://rabby.io/">Install Rabby</a>
+          <a class="btn" target="_blank" href="https://phantom.app/download">Install Phantom (EVM)</a>
+          <a class="btn" target="_blank" href="https://www.coinbase.com/wallet">Coinbase Wallet</a>
+        </div>
+
+        <div class="muted" style="margin:14px 0 4px">Get test ETH</div>
+        <div class="stack" style="flex-direction:row;flex-wrap:wrap;gap:8px">
+          <a class="btn" target="_blank" href="https://faucet.quicknode.com/arbitrum/sepolia">QuickNode Faucet</a>
+          <a class="btn" target="_blank" href="https://www.alchemy.com/faucets/arbitrum-sepolia">Alchemy Faucet</a>
+        </div>
+
+        <div class="muted" style="margin:14px 0 6px">Network tools</div>
+        <div class="stack" style="flex-direction:row;gap:8px;flex-wrap:wrap">
+          <button id="btnAddNet" class="btn">➕ Add Arbitrum (Sepolia)</button>
+          <button id="btnDiag" class="btn">🧪 Run Diagnostics</button>
+          <button id="btnShowAnalytics" class="btn">📊 Show Analytics</button>
+        </div>
+
+        <div id="helpMsg" class="status"></div>
+        <div class="muted" style="margin-top:10px;font-size:12px">Docs:
+          <a href="https://docs.arbitrum.io/" target="_blank">Arbitrum</a> • Faucet:
+          <a href="https://faucet.quicknode.com/arbitrum/sepolia" target="_blank">QuickNode</a>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    🔬 Educational testnet only • <a href="https://faucet.quicknode.com/arbitrum/sepolia" target="_blank">Get Test ETH</a>
+  </footer>
+</div>
+
+<!-- Success Celebration Modal -->
+<div id="celebration" class="celebration">
+  <div style="font-size:48px;margin-bottom:10px">🎉</div>
+  <div id="celebrationText" style="font-weight:800;margin-bottom:10px">Module Completed!</div>
+  <div id="celebrationDesc" style="color:var(--muted);margin-bottom:15px">You're making great progress!</div>
+  <button id="celebrationClose" class="btn success">Continue Learning</button>
+</div>
+
+<!-- Educational Modal -->
+<div id="modal" class="modal">
+  <div class="modal-inner">
+    <div class="modal-h">
+      <div style="font-weight:800" id="mTitle">Module</div>
+      <div class="muted" id="mSub" style="margin-top:4px">Master the fundamentals</div>
+    </div>
+    <div class="modal-b" id="mBody"></div>
+    <div class="modal-f">
+      <button id="mClose" class="btn">Close</button>
+      <button id="mNext" class="btn primary">Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Analytics Panel -->
+<div id="analyticsPanel" class="analytics">
+  <div style="font-weight:700;margin-bottom:8px">Learning Analytics</div>
+  <div id="analyticsContent"></div>
+  <button id="closeAnalytics" class="btn" style="padding:4px 8px;font-size:11px;margin-top:8px">Close</button>
+</div>
+
+<script>
+/* -------------------------- Chain & Addresses -------------------------- */
+const CHAIN_ID_HEX = "0x66EEE"; // 421614
+const NET_PARAMS = {
+  chainId: CHAIN_ID_HEX,
+  chainName: "Arbitrum Sepolia",
+  rpcUrls: ["https://sepolia-rollup.arbitrum.io/rpc"],
+  blockExplorerUrls: ["https://sepolia.arbiscan.io/"],
+  nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 }
+};
+
+// Raw addresses - will be checksummed when web3 is available
+const ADDR_RAW = {
+  EMPIRE: "0x5cAe639C37dc7481dC206bb371806A18993Ba2A0",
+  PLAYER_PROFILE: "0x1A1a0667a01946d5D07256c68beb92e2b87809D8",
+  QUEST_MANAGER: "0x54c20dc2771ef7dff5650cd8ec96420b84657285",
+  GAME_MANAGER: "0xd74c004e11b905fd78e7a5ef842884718e546fe3",
+};
+
+// This will hold properly checksummed addresses
+let ADDR = {};
+
+/* ------------------------------- ABIs --------------------------------- */
+const ERC20_ABI = [
+  {"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+];
+
+const PROFILE_ABI = [
+  {"inputs":[{"name":"","type":"address"}],"name":"playerToTokenId","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"player","type":"address"}],"name":"getPlayerProfile","outputs":[
+    {"name":"level","type":"uint256"},{"name":"experience","type":"uint256"},{"name":"totalQuestsCompleted","type":"uint256"},
+    {"name":"joinDate","type":"uint256"},{"name":"empireType","type":"string"},{"name":"isActive","type":"bool"},
+    {"name":"reputation","type":"uint256"},{"name":"totalEarnings","type":"uint256"},{"name":"buildingsOwned","type":"uint256"},{"name":"customName","type":"string"}
+  ],"stateMutability":"view","type":"function"}
+];
+
+const GAME_ABI = [
+  {"inputs":[{"name":"player","type":"address"}],"name":"isRegistered","outputs":[{"name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"player","type":"address"}],"name":"isEligibleForDailyBonus","outputs":[{"name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"dailyCooldown","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"player","type":"address"}],"name":"lastDailyClaim","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"empireType","type":"string"},{"name":"tokenURI","type":"string"}],"name":"registerPlayer","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[],"name":"claimDailyBonus","outputs":[],"stateMutability":"nonpayable","type":"function"}
+];
+
+const QUEST_ABI = [
+  {"inputs":[],"name":"getTotalQuests","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"questId","type":"uint256"}],"name":"getQuest","outputs":[
+    {"name":"id","type":"uint256"},{"name":"title","type":"string"},{"name":"description","type":"string"},
+    {"name":"experienceReward","type":"uint256"},{"name":"tokenReward","type":"uint256"},{"name":"questType","type":"string"},
+    {"name":"minLevel","type":"uint256"},{"name":"maxLevel","type":"uint256"},{"name":"isActive","type":"bool"},
+    {"name":"isDaily","type":"bool"},{"name":"completionCriteria","type":"bytes32"},{"name":"timeLimit","type":"uint256"},
+    {"name":"maxCompletions","type":"uint256"},{"name":"currentCompletions","type":"uint256"},{"name":"createdAt","type":"uint256"},{"name":"tags","type":"string[]"}
+  ],"stateMutability":"view","type":"function"},
+  {"inputs":[{"name":"questId","type":"uint256"},{"name":"proofHash","type":"bytes32"},{"name":"verificationData","type":"string"}],"name":"completeQuest","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"inputs":[{"name":"player","type":"address"}],"name":"getAvailableQuests","outputs":[{"name":"","type":"tuple[]"}],"stateMutability":"view","type":"function"}
+];
+
+/* ----------------------------- State ---------------------------------- */
+let web3 = null;
+let account = null;
+let contracts = {};
+let quizCtx = { moduleKey:null, selected:null, currentQuestion: 0, totalQuestions: 0 };
+let userProgress = {};
+let analytics = {"modulesStarted":0,"modulesCompleted":0,"questsAttempted":0,"totalTimeSpent":0,"sessions":0};
+
+/* ----------------------------- Helpers -------------------------------- */
+const $ = id => document.getElementById(id);
+
+function flash(node, text, kind='') { 
+  if(!node) return;
+  node.textContent = text; 
+  node.className = 'status ' + (kind==='ok'?'ok':kind==='err'?'err':''); 
+  node.style.display='block';
+  setTimeout(()=>node.style.display='none', 6000);
+}
+
+function initializeAddresses(web3Instance) {
+  try {
+    ADDR = {
+      EMPIRE: web3Instance.utils.toChecksumAddress(ADDR_RAW.EMPIRE),
+      PLAYER_PROFILE: web3Instance.utils.toChecksumAddress(ADDR_RAW.PLAYER_PROFILE),
+      QUEST_MANAGER: web3Instance.utils.toChecksumAddress(ADDR_RAW.QUEST_MANAGER),
+      GAME_MANAGER: web3Instance.utils.toChecksumAddress(ADDR_RAW.GAME_MANAGER),
+    };
+    console.log('Checksummed addresses:', ADDR);
+  } catch (error) {
+    console.error('Error checksumming addresses:', error);
+    ADDR = { ...ADDR_RAW };
+  }
+}
+
+function fmtDuration(s){
+  if (s<=0) return 'Ready now';
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
+  const parts=[]; if(h) parts.push(h+'h'); if(m) parts.push(m+'m'); if(sec||!parts.length) parts.push(sec+'s');
+  return parts.join(' ');
+}
+
+/* --------------------------- Progress Management -------------------------- */
+function loadWalletProgress(walletAddress) {
+  const key = `defi_academy_progress_${walletAddress.toLowerCase()}`;
+  userProgress = JSON.parse(localStorage.getItem(key) || '{}');
+  updateProgressDisplay();
+}
+
+function saveWalletProgress(walletAddress) {
+  const key = `defi_academy_progress_${walletAddress.toLowerCase()}`;
+  localStorage.setItem(key, JSON.stringify(userProgress));
+}
+
+function saveProgress() {
+  if (account) {
+    saveWalletProgress(account);
+  } else {
+    localStorage.setItem('defi_academy_progress', JSON.stringify(userProgress));
+  }
+  
+  // Load analytics from localStorage
+  analytics = JSON.parse(localStorage.getItem('defi_academy_analytics') || '{"modulesStarted":0,"modulesCompleted":0,"questsAttempted":0,"totalTimeSpent":0,"sessions":0}');
+}
+
+function saveAnalytics() {
+  localStorage.setItem('defi_academy_analytics', JSON.stringify(analytics));
+}
+
+function updateProgressDisplay() {
+  const completed = Object.keys(userProgress).filter(k => userProgress[k] && userProgress[k].completed).length;
+  const total = Object.keys(MODULES).length;
+  const pct = Math.round((completed / total) * 100);
+  
+  $('overallPct').textContent = `${pct}% complete`;
+  $('progressFill').style.width = `${pct}%`;
+  $('profModules').textContent = `${completed}/${total}`;
+  
+  // Update module status indicators
+  Object.keys(MODULES).forEach(key => {
+    const statusEl = $(`status-${key}`);
+    const cardEl = document.querySelector(`[data-module="${key}"]`);
+    if (statusEl && cardEl) {
+      if (userProgress[key] && userProgress[key].completed) {
+        statusEl.textContent = '✅';
+        cardEl.classList.add('completed');
+      } else if (userProgress[key] && userProgress[key].started) {
+        statusEl.textContent = '⏳';
+        cardEl.classList.remove('completed');
+      } else if (checkPrerequisites(key)) {
+        statusEl.textContent = '';
+        cardEl.classList.remove('completed', 'locked');
+      } else {
+        statusEl.textContent = '🔒';
+        cardEl.classList.add('locked');
+      }
+    }
+  });
+}
+
+function checkPrerequisites(moduleKey) {
+  const module = MODULES[moduleKey];
+  if (!module.prerequisites || module.prerequisites.length === 0) return true;
+  return module.prerequisites.every(prereq => userProgress[prereq] && userProgress[prereq].completed);
+}
+
+function showCelebration(moduleKey) {
+  const module = MODULES[moduleKey];
+  $('celebrationText').textContent = `${module.title} Completed!`;
+  $('celebrationDesc').textContent = `You've mastered ${module.title.toLowerCase()}. Keep going!`;
+  $('celebration').classList.add('active');
+  
+  setTimeout(() => {
+    $('celebration').classList.remove('active');
+  }, 3000);
+}
+
+function trackAnalytics(event, data = {}) {
+  const timestamp = Date.now();
+  
+  switch(event) {
+    case 'module_started':
+      analytics.modulesStarted++;
+      break;
+    case 'module_completed':
+      analytics.modulesCompleted++;
+      break;
+    case 'quest_attempted':
+      analytics.questsAttempted++;
+      break;
+    case 'session_start':
+      analytics.sessions++;
+      analytics.sessionStart = timestamp;
+      break;
+    case 'session_end':
+      if (analytics.sessionStart) {
+        analytics.totalTimeSpent += (timestamp - analytics.sessionStart) / 1000;
+        delete analytics.sessionStart;
+      }
+      break;
+  }
+  
+  saveAnalytics();
+}
+
+/* ----------------------------- Learning Modules ------------------------------- */
+const MODULES = {
+  wallets: {
+    title: 'Digital Wallets & Private Keys',
+    difficulty: 'Beginner',
+    estimatedTime: '15 minutes',
+    prerequisites: [],
+    category: 'Core Blockchain',
+    content: {
+      introduction: `Welcome to the world of blockchain! Think of a digital wallet as your passport to the decentralized world - but it works very differently from your physical wallet.
+
+Unlike your leather wallet that holds physical cash and cards, a digital wallet doesn't actually "store" cryptocurrency. Instead, it stores something much more valuable: your private keys.`,
+      
+      concepts: [
+        {
+          title: 'What Digital Wallets Actually Store',
+          explanation: `Your wallet contains:
+• Private Keys: Secret codes that prove you own cryptocurrency (like a password)
+• Public Keys: Your wallet address that others can send money to (like your email address)
+• Transaction History: A record of all your blockchain interactions
+
+Real-world analogy: Your wallet is like a safe deposit box. The private key is the only key that opens it, while your public address is the box number that people use to find it.`,
+          example: 'If your wallet address is 0x742d35Cc6aB6632C, anyone can send you tokens to this address. But only YOU have the private key to spend those tokens.'
+        },
+        {
+          title: 'Why This Matters for Financial Freedom',
+          explanation: `Traditional banking requires:
+• Government-issued ID
+• Proof of address  
+• Credit history
+• Bank approval
+
+Blockchain wallets require:
+• Just an internet connection
+• No permissions needed
+• Available 24/7 worldwide
+• You control your own money
+
+This is especially powerful in regions with limited banking infrastructure or for people excluded from traditional financial systems.`,
+          example: 'A farmer in rural India can receive payments from buyers worldwide instantly, without needing a bank account or waiting for approval.'
+        },
+        {
+          title: 'Wallet Security Fundamentals',
+          explanation: `Your private key = your money. If someone gets your private key, they can steal everything.
+
+Security rules:
+• Never share your private key or seed phrase with anyone
+• Write down your seed phrase on paper, not digitally
+• Use hardware wallets for large amounts
+• Always verify addresses before sending transactions
+• Be suspicious of any website asking for your private key`,
+          example: 'Your seed phrase might look like: "apple banana cat dog elephant..." - these 12-24 words can recreate your entire wallet, so protect them like gold!'
+        }
+      ],
+      keyTakeaways: [
+        'Digital wallets store private keys, not cryptocurrency',
+        'Private keys = ownership - protect them at all costs',
+        'Wallets provide financial access without traditional banking requirements',
+        'Public addresses are safe to share, private keys are not',
+        'Blockchain enables financial inclusion for underbanked populations'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What does a digital wallet actually store?',
+        opts: ['Cryptocurrency coins and tokens', 'Private keys that prove ownership', 'Your bank account information', 'Government identification documents'],
+        correct: 1,
+        explanation: 'Digital wallets store private keys - the secret codes that prove you own cryptocurrency. The actual cryptocurrency exists on the blockchain, not in your wallet.'
+      },
+      {
+        q: 'Why are blockchain wallets important for financial inclusion?',
+        opts: ['They require government approval', 'They only work with existing bank accounts', 'They provide financial access without traditional banking requirements', 'They are only available in developed countries'],
+        correct: 2,
+        explanation: 'Blockchain wallets can be created by anyone with internet access, without needing bank accounts, credit history, or government approval - making financial services accessible to underbanked populations.'
+      },
+      {
+        q: 'If someone gets access to your private key, what should you do?',
+        opts: ['Change your password', 'Contact customer support', 'Immediately move all funds to a new wallet', 'Wait and see if anything happens'],
+        correct: 2,
+        explanation: 'If your private key is compromised, immediately create a new wallet and transfer all funds. Unlike passwords, private keys cannot be changed - you need a completely new wallet.'
+      }
+    ]
+  },
+
+  networks: {
+    title: 'Blockchain Networks & Consensus',
+    difficulty: 'Beginner',
+    estimatedTime: '18 minutes',
+    prerequisites: ['wallets'],
+    category: 'Core Blockchain',
+    content: {
+      introduction: `Imagine trying to keep track of money without banks, governments, or any central authority. How would you prevent fraud? How would everyone agree on who owns what? This is the problem blockchain solves through decentralized consensus.`,
+      
+      concepts: [
+        {
+          title: 'Decentralized vs Centralized Systems',
+          explanation: `Centralized (Traditional Banking):
+• One authority controls everything (your bank)
+• Single point of failure
+• Can freeze accounts or reverse transactions
+• Requires trust in the institution
+• Limited operating hours
+
+Decentralized (Blockchain):
+• Thousands of computers validate transactions
+• No single point of failure
+• Transactions are permanent and censorship-resistant
+• Trustless system - math and code enforce rules
+• Operates 24/7 globally`,
+          example: 'When you send money via bank transfer, your bank decides if the transaction is valid. With blockchain, thousands of independent computers reach consensus on validity.'
+        },
+        {
+          title: 'How Consensus Mechanisms Work',
+          explanation: `Consensus = how the network agrees on what transactions are valid.
+
+Proof of Work (Bitcoin):
+• Miners compete to solve math puzzles
+• Winner validates the next block of transactions
+• Energy-intensive but very secure
+
+Proof of Stake (Ethereum, Arbitrum):
+• Validators stake tokens as collateral
+• Chosen randomly to validate blocks
+• Much more energy efficient
+• Penalty system for malicious behavior`,
+          example: 'Think of Proof of Stake like a jury system - jurors put up a deposit to participate, and lose it if they make dishonest decisions.'
+        },
+        {
+          title: 'Layer 1 vs Layer 2 Solutions',
+          explanation: `Layer 1 (Base Blockchains):
+• Ethereum: Most secure, expensive transactions
+• Bitcoin: Store of value, slower transactions
+• Direct settlement on main chain
+
+Layer 2 (Scaling Solutions):
+• Arbitrum: Faster, cheaper than Ethereum
+• Polygon: High throughput for applications
+• Process transactions off-chain, settle to Layer 1
+• Inherit security from main chain
+
+This is why we use Arbitrum for learning - you get Ethereum's security with much lower costs!`,
+          example: 'Layer 2 is like an express lane on a highway - you travel faster and cheaper, but still end up at the same secure destination.'
+        }
+      ],
+      keyTakeaways: [
+        'Consensus mechanisms allow networks to agree without central authority',
+        'Proof of Stake is more energy efficient than Proof of Work',
+        'Layer 2 solutions provide speed and cost benefits while maintaining security',
+        'Decentralization enables censorship resistance and global access',
+        'Understanding network differences helps choose the right blockchain for each use case'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What is the main advantage of decentralized consensus over centralized systems?',
+        opts: ['Faster transaction processing', 'Lower fees for all transactions', 'No single point of failure or control', 'Government backing and insurance'],
+        correct: 2,
+        explanation: 'Decentralized consensus eliminates single points of failure and control, making the system more resilient and censorship-resistant than centralized alternatives.'
+      },
+      {
+        q: 'Why do we use Arbitrum (Layer 2) instead of Ethereum mainnet for this course?',
+        opts: ['Arbitrum is more secure than Ethereum', 'Arbitrum provides faster, cheaper transactions while maintaining security', 'Arbitrum uses a different consensus mechanism', 'Arbitrum is owned by a single company'],
+        correct: 1,
+        explanation: 'Arbitrum processes transactions faster and cheaper than Ethereum mainnet while inheriting Ethereum\'s security through its Layer 2 architecture.'
+      },
+      {
+        q: 'In Proof of Stake consensus, what incentivizes validators to act honestly?',
+        opts: ['They receive government rewards', 'They compete to solve math puzzles', 'They stake tokens that can be lost for malicious behavior', 'They are chosen by a central authority'],
+        correct: 2,
+        explanation: 'Validators must stake tokens as collateral. If they validate fraudulent transactions or act maliciously, they lose their staked tokens, creating economic incentive for honest behavior.'
+      }
+    ]
+  },
+
+  gas: {
+    title: 'Transactions & Gas Fees',
+    difficulty: 'Beginner',
+    estimatedTime: '20 minutes',
+    prerequisites: ['networks'],
+    category: 'Core Blockchain',
+    content: {
+      introduction: `Every blockchain transaction has a cost - not because banks charge fees, but because computing power isn't free. Understanding gas fees is crucial for using blockchain efficiently and economically.`,
+      
+      concepts: [
+        {
+          title: 'What Are Gas Fees and Why Do They Exist?',
+          explanation: `Gas = the cost of computation on blockchain networks.
+
+Why gas fees exist:
+• Validators use computing power to process your transaction
+• Prevents spam (makes flooding the network expensive)
+• Pays for network security and maintenance
+• Prioritizes urgent transactions
+
+Gas fees include:
+• Base Fee: Minimum cost to include transaction in a block
+• Priority Fee: Extra payment to process faster
+• Gas Limit: Maximum you're willing to pay`,
+          example: 'Like postage stamps - you pay based on the service level you want. Regular mail is cheaper but slower, express mail costs more but arrives faster.'
+        },
+        {
+          title: 'Gas Economics Across Different Networks',
+          explanation: `Ethereum Mainnet:
+• High security but expensive ($5-50+ per transaction)
+• Network congestion drives up prices
+• Often prohibitive for small transactions
+
+Arbitrum (Layer 2):
+• Same security as Ethereum
+• 95% cheaper transactions ($0.01-0.50)
+• Faster confirmation times
+• Perfect for learning and small transactions
+
+Why the difference?
+• Arbitrum bundles many transactions together
+• Processes them off-chain then settles to Ethereum
+• Shares costs across many users`,
+          example: 'Sending $10 worth of tokens might cost $30 in fees on Ethereum mainnet, but only $0.05 on Arbitrum - making small transactions practical.'
+        },
+        {
+          title: 'Gas Optimization Strategies',
+          explanation: `Timing your transactions:
+• Monitor network congestion (weekends often cheaper)
+• Avoid high-traffic events (NFT drops, major announcements)
+• Use gas tracking tools to find optimal times
+
+Transaction efficiency:
+• Batch multiple operations when possible
+• Use simpler operations when available
+• Set appropriate gas limits (not too high or low)
+• Consider Layer 2 solutions for routine operations
+
+Failed transactions:
+• Still consume gas (validators did the work)
+• Usually caused by insufficient gas limit or smart contract errors
+• Always check gas estimates before confirming`,
+          example: 'Setting gas limit too low is like putting insufficient postage on a package - it gets returned but you still pay the postage.'
+        }
+      ],
+      keyTakeaways: [
+        'Gas fees pay validators for computational work and prevent network spam',
+        'Layer 2 solutions dramatically reduce gas costs while maintaining security',
+        'Failed transactions still consume gas because computational work was performed',
+        'Strategic timing and network choice can significantly reduce transaction costs',
+        'Understanding gas economics is essential for practical blockchain usage'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What happens to gas fees when your transaction fails?',
+        opts: ['Gas fees are fully refunded', 'Gas fees are consumed but no state changes occur', 'Only half the gas fees are charged', 'The transaction is automatically retried for free'],
+        correct: 1,
+        explanation: 'Failed transactions still consume gas because validators performed computational work to process the transaction, even though it didn\'t complete successfully.'
+      },
+      {
+        q: 'Why are Arbitrum transactions much cheaper than Ethereum mainnet?',
+        opts: ['Arbitrum uses cheaper hardware', 'Arbitrum has lower security requirements', 'Arbitrum bundles transactions and shares costs', 'Arbitrum is subsidized by the government'],
+        correct: 2,
+        explanation: 'Arbitrum processes many transactions off-chain, bundles them together, and shares the cost of settlement to Ethereum mainnet across all users.'
+      },
+      {
+        q: 'What is the best strategy for minimizing gas costs?',
+        opts: ['Always use the maximum gas limit', 'Only transact during peak network hours', 'Use Layer 2 solutions and time transactions strategically', 'Send multiple small transactions instead of one large one'],
+        correct: 2,
+        explanation: 'Using Layer 2 solutions like Arbitrum and timing transactions during low-congestion periods can reduce gas costs by 90%+ while maintaining security.'
+      }
+    ]
+  },
+
+  contracts: {
+    title: 'Smart Contracts Fundamentals',
+    difficulty: 'Intermediate',
+    estimatedTime: '22 minutes',
+    prerequisites: ['gas'],
+    category: 'Core Blockchain',
+    content: {
+      introduction: `Smart contracts are the engines that power decentralized finance. They're programs that automatically execute agreements when predetermined conditions are met - no lawyers, no courts, no human intervention required.`,
+      
+      concepts: [
+        {
+          title: 'What Makes Contracts "Smart"',
+          explanation: `Traditional contracts:
+• Written in legal language
+• Require human interpretation
+• Need courts to enforce
+• Can be subjective or ambiguous
+
+Smart contracts:
+• Written in code (precise, mathematical)
+• Self-executing when conditions are met
+• Enforced by blockchain (no courts needed)
+• Transparent and auditable by anyone
+
+Key characteristics:
+• Immutable: Can't be changed after deployment (usually)
+• Deterministic: Same inputs always produce same outputs  
+• Transparent: Code is publicly visible on blockchain
+• Trustless: Don't need to trust other parties, just the code`,
+          example: 'A vending machine is like a simple smart contract - insert coins (condition), press button (action), receive snack (automatic execution). No human needed!'
+        },
+        {
+          title: 'Real-World Smart Contract Applications',
+          explanation: `Insurance (Crop Insurance):
+• Automatically pays farmers if weather data shows drought
+• No claims process, no bureaucracy
+• Transparent, instant payouts
+
+Supply Chain (Coffee Tracking):
+• Records journey from farm to cup
+• Automatically pays farmers when coffee reaches destination
+• Consumers can verify ethical sourcing
+
+Decentralized Finance (Lending):
+• Automatically liquidates collateral if loan value drops
+• No bank needed to enforce the loan terms
+• Interest rates adjust based on supply and demand
+
+Identity & Credentials:
+• Educational certificates that can't be faked
+• Professional licenses verified on blockchain
+• Reduces credential fraud in developing markets`,
+          example: 'A micro-loan smart contract could automatically release funds when a borrower meets certain milestones, helping small businesses in areas without traditional banking.'
+        },
+        {
+          title: 'Interacting with Smart Contracts Safely',
+          explanation: `Before using any smart contract:
+• Verify the contract address (scammers create fake contracts)
+• Check if the code has been audited by security firms
+• Understand what permissions you're granting
+• Start with small amounts for testing
+
+Common interactions:
+• Approve: Give contract permission to use your tokens
+• Deposit: Send tokens to the contract
+• Withdraw: Remove your tokens from the contract
+• Execute: Trigger a specific contract function
+
+Red flags to avoid:
+• Contracts asking for unlimited approvals
+• Projects with anonymous teams and no audits
+• Promises of unrealistic returns
+• Contracts that can't be verified on blockchain explorers`,
+          example: 'Always verify you\'re interacting with the real Uniswap contract (0x...) not a fake one (0x...) that looks similar but will steal your tokens.'
+        }
+      ],
+      keyTakeaways: [
+        'Smart contracts execute automatically when conditions are met, without human intervention',
+        'They enable trustless interactions between parties who don\'t know each other',
+        'Always verify contract addresses and understand permissions before interacting',
+        'Smart contracts can provide financial services to areas without traditional banking',
+        'Reading and understanding smart contracts is crucial for DeFi safety'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What makes smart contracts different from traditional legal contracts?',
+        opts: ['They are written by lawyers', 'They require court enforcement', 'They execute automatically when conditions are met', 'They can be easily changed after signing'],
+        correct: 2,
+        explanation: 'Smart contracts execute automatically based on programmed conditions, without requiring human interpretation or court enforcement.'
+      },
+      {
+        q: 'Why might smart contracts be especially valuable in developing economies?',
+        opts: ['They require expensive internet connections', 'They provide financial services without traditional banking infrastructure', 'They only work with government approval', 'They require advanced technical knowledge to use'],
+        correct: 1,
+        explanation: 'Smart contracts can provide loans, insurance, and other financial services directly on blockchain, without requiring banks, courts, or complex legal systems.'
+      },
+      {
+        q: 'What should you always do before interacting with a smart contract?',
+        opts: ['Send all your tokens immediately', 'Contact customer support first', 'Verify the contract address and understand the permissions', 'Wait for government approval'],
+        correct: 2,
+        explanation: 'Always verify you\'re interacting with the legitimate contract address and understand what permissions you\'re granting to avoid scams and losses.'
+      }
+    ]
+  },
+
+  tokens: {
+    title: 'Tokens & Token Standards',
+    difficulty: 'Intermediate',
+    estimatedTime: '20 minutes',
+    prerequisites: ['contracts'],
+    category: 'DeFi Fundamentals',
+    content: {
+      introduction: `Tokens are the building blocks of the decentralized economy. Unlike traditional assets, tokens can represent anything of value and be programmed with specific behaviors and utilities.`,
+      
+      concepts: [
+        {
+          title: 'Understanding Token Standards',
+          explanation: `Token standards are like blueprints that define how tokens behave.
+
+ERC-20 (Fungible Tokens):
+• Each token is identical and interchangeable
+• Like traditional currency - one dollar equals any other dollar
+• Examples: USDC (stablecoin), UNI (governance), LINK (oracle data)
+• Used for: Currency, voting rights, rewards, utility payments
+
+ERC-721 (Non-Fungible Tokens - NFTs):
+• Each token is unique and not interchangeable
+• Like original artwork - each piece is one-of-a-kind
+• Examples: Art, collectibles, game items, real estate deeds
+• Used for: Digital ownership, identity, certificates, unique assets
+
+ERC-1155 (Multi-Token Standard):
+• Can create both fungible and non-fungible tokens in one contract
+• Like a game inventory system
+• Examples: Gaming assets where you have 5 identical swords (fungible) and 1 unique armor piece (non-fungible)`,
+          example: 'Think of ERC-20 tokens like coins in your pocket (all quarters are the same), and NFTs like baseball cards (each card is unique and has different value).'
+        },
+        {
+          title: 'Token Economics and Utility',
+          explanation: `Utility Tokens:
+• Provide access to services or products
+• Example: Paying for cloud storage with Filecoin
+• Value derives from underlying utility
+
+Governance Tokens:
+• Give voting rights in decentralized organizations
+• Example: UNI holders vote on Uniswap protocol changes
+• Democratic participation in protocol development
+
+Security Tokens:
+• Represent ownership in real-world assets
+• Example: Tokenized real estate or company shares
+• Subject to securities regulations
+
+Stablecoins:
+• Designed to maintain stable value (usually $1)
+• Examples: USDC (backed by US dollars), DAI (algorithmic)
+• Bridge between volatile crypto and stable value`,
+          example: 'A governance token is like a shareholder vote - the more tokens you hold, the more influence you have over the protocol\'s future direction.'
+        },
+        {
+          title: 'Token Approvals and Permissions',
+          explanation: `When interacting with DeFi protocols, you must give permission for smart contracts to use your tokens.
+
+Token Approval Process:
+1. You approve a contract to spend your tokens
+2. You can set spending limits (recommended)
+3. The contract can then move your approved tokens
+4. You can revoke approvals at any time
+
+Safety considerations:
+• Never approve unlimited spending unless absolutely necessary
+• Regularly review and revoke unnecessary approvals
+• Use tools like Revoke.cash to manage permissions
+• Understand that approvals persist until manually revoked
+
+Common approval patterns:
+• Trading: Approve DEX to swap your tokens
+• Lending: Approve protocol to use your collateral
+• Staking: Approve contract to stake your tokens`,
+          example: 'Token approval is like giving someone a credit card with a specific spending limit - they can use it up to that amount, but you can cancel the card anytime.'
+        }
+      ],
+      keyTakeaways: [
+        'ERC-20 tokens are fungible (interchangeable), NFTs are unique',
+        'Token standards ensure compatibility across different applications',
+        'Governance tokens enable democratic participation in protocol decisions',
+        'Always set reasonable approval limits and regularly review permissions',
+        'Tokens can represent any form of value or utility, not just currency'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What is the main difference between ERC-20 tokens and NFTs?',
+        opts: ['ERC-20 tokens are more expensive', 'ERC-20 tokens are fungible (interchangeable), NFTs are unique', 'NFTs can only represent digital art', 'ERC-20 tokens require government approval'],
+        correct: 1,
+        explanation: 'ERC-20 tokens are fungible, meaning each token is identical and interchangeable. NFTs (ERC-721) are non-fungible, meaning each token is unique.'
+      },
+      {
+        q: 'Why do you need to approve tokens before using DeFi protocols?',
+        opts: ['To pay government taxes', 'To give smart contracts permission to use your tokens', 'To register with the protocol owner', 'To verify your identity'],
+        correct: 1,
+        explanation: 'Token approvals give smart contracts permission to move your tokens on your behalf, which is necessary for trading, lending, and other DeFi operations.'
+      },
+      {
+        q: 'What makes governance tokens valuable?',
+        opts: ['They pay guaranteed dividends', 'They are backed by government bonds', 'They provide voting rights in protocol decisions', 'They automatically increase in price'],
+        correct: 2,
+        explanation: 'Governance tokens give holders voting rights in decentralized protocol decisions, allowing democratic participation in the protocol\'s future development.'
+      }
+    ]
+  },
+
+  dex: {
+    title: 'Decentralized Exchanges (DEXs)',
+    difficulty: 'Intermediate',
+    estimatedTime: '25 minutes',
+    prerequisites: ['tokens'],
+    category: 'DeFi Fundamentals',
+    content: {
+      introduction: `Decentralized exchanges revolutionize trading by eliminating traditional intermediaries. Instead of trusting a company with your funds, you trade directly from your wallet using automated smart contracts.`,
+      
+      concepts: [
+        {
+          title: 'DEX vs Traditional Exchange Models',
+          explanation: `Centralized Exchanges (CEX) like Coinbase:
+• Custody your funds (you don't hold private keys)
+• Act as intermediary in all trades
+• Can freeze accounts or halt trading
+• Require KYC/identity verification
+• Single point of failure
+• Order book matching system
+
+Decentralized Exchanges (DEX) like Uniswap:
+• You maintain custody of your funds
+• Smart contracts facilitate trades
+• Permissionless and censorship-resistant
+• No identity verification required
+• Distributed across many validators
+• Automated Market Maker (AMM) system`,
+          example: 'CEX trading is like using a traditional stock broker who holds your shares. DEX trading is like a peer-to-peer marketplace where you keep your assets until the moment of trade.'
+        },
+        {
+          title: 'How Automated Market Makers Work',
+          explanation: `Traditional Order Books:
+• Buyers and sellers post orders
+• Exchange matches buy/sell orders
+• Requires sufficient market depth
+• Can have large bid-ask spreads
+
+Automated Market Makers (AMMs):
+• Liquidity pools contain pairs of tokens (e.g., ETH/USDC)
+• Mathematical formulas determine prices
+• Anyone can trade against the pool instantly
+• Liquidity providers earn fees from trades
+
+The x*y=k Formula:
+• Pool maintains constant product of two token amounts
+• As one token is bought, its price increases
+• Larger trades cause more price impact (slippage)
+• Pool automatically rebalances after each trade`,
+          example: 'Imagine a pool with 100 ETH and 200,000 USDC (1 ETH = $2000). If someone buys 10 ETH, there\'s now 90 ETH and more USDC, so the price of ETH increases.'
+        },
+        {
+          title: 'Understanding Slippage and MEV',
+          explanation: `Slippage:
+• Difference between expected and actual trade price
+• Caused by price impact of your trade size
+• Higher for larger trades or smaller liquidity pools
+• Set slippage tolerance to protect against excessive slippage
+
+Maximal Extractable Value (MEV):
+• Profit extracted by reordering transactions
+• Front-running: Bots see your trade and trade first
+• Sandwich attacks: Bots trade before and after your transaction
+• Can increase your trade costs
+
+Protection strategies:
+• Use private mempools (Flashbots)
+• Split large trades into smaller ones
+• Trade during high-volume periods
+• Use DEX aggregators for better routing`,
+          example: 'If you try to buy $10,000 worth of a small-cap token, your purchase might move the price up 5%, so you get less tokens than expected (slippage).'
+        }
+      ],
+      keyTakeaways: [
+        'DEXs provide permissionless trading while maintaining custody of your funds',
+        'AMMs use mathematical formulas instead of order books to determine prices',
+        'Larger trades cause more slippage due to price impact',
+        'Understanding MEV helps protect against front-running and sandwich attacks',
+        'DEXs enable global financial access without traditional banking requirements'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What is the main advantage of DEXs over centralized exchanges?',
+        opts: ['DEXs always have lower fees', 'DEXs process transactions faster', 'DEXs allow you to maintain custody of your funds', 'DEXs require government oversight'],
+        correct: 2,
+        explanation: 'DEXs allow you to trade directly from your wallet without giving custody of your funds to a centralized entity, reducing counterparty risk.'
+      },
+      {
+        q: 'What causes slippage in AMM-based DEXs?',
+        opts: ['Government regulations', 'Network congestion', 'Price impact from your trade size relative to pool liquidity', 'Exchange maintenance'],
+        correct: 2,
+        explanation: 'Slippage occurs when your trade is large enough relative to the liquidity pool to move the price, resulting in a worse execution price than expected.'
+      },
+      {
+        q: 'How do liquidity providers earn money on DEXs?',
+        opts: ['They receive government subsidies', 'They earn trading fees from swaps in their pools', 'They get guaranteed fixed returns', 'They mine new tokens'],
+        correct: 1,
+        explanation: 'Liquidity providers earn a portion of the trading fees generated by swaps in the pools where they\'ve deposited their tokens.'
+      }
+    ]
+  },
+
+  lending: {
+    title: 'DeFi Lending & Borrowing',
+    difficulty: 'Intermediate',
+    estimatedTime: '25 minutes',
+    prerequisites: ['dex'],
+    category: 'DeFi Fundamentals',
+    content: {
+      introduction: `DeFi lending protocols create money markets where anyone can lend assets to earn yield or borrow against their crypto holdings - all without banks, credit checks, or paperwork.`,
+      
+      concepts: [
+        {
+          title: 'How DeFi Lending Works',
+          explanation: `Traditional Lending:
+• Banks collect deposits and lend to borrowers
+• Interest rate spreads (pay 1%, charge 5%)
+• Credit checks and approval processes
+• Geographic and regulatory limitations
+• Banks keep the spread as profit
+
+DeFi Lending Protocols:
+• Smart contracts pool lender funds
+• Borrowers deposit collateral and borrow against it
+• Interest rates determined by supply and demand
+• Global access, no credit checks needed
+• Interest spreads go to lenders, not banks
+
+Key participants:
+• Lenders: Deposit assets to earn yield
+• Borrowers: Put up collateral to access credit
+• Liquidators: Repay defaulted loans for profit
+• Protocol: Earns small fees for facilitating`,
+          example: 'Like a peer-to-peer lending circle, but automated by smart contracts and secured by crypto collateral instead of personal relationships.'
+        },
+        {
+          title: 'Collateralization and Liquidation',
+          explanation: `Over-collateralization:
+• Borrowers must deposit more value than they borrow
+• Typical ratio: Deposit $150 worth of ETH to borrow $100 USDC
+• Protects lenders from borrower default
+• Allows lending without identity verification
+
+Liquidation process:
+• If collateral value drops, loan becomes under-collateralized
+• Anyone can liquidate the position
+• Liquidator repays the debt and receives discounted collateral
+• Remaining collateral goes back to borrower
+
+Health factors:
+• Ratio of collateral value to debt value
+• Health factor below 1.0 triggers liquidation
+• Borrowers monitor and add collateral to avoid liquidation`,
+          example: 'If you deposit $1500 of ETH and borrow $1000 USDC, you\'re 150% collateralized. If ETH drops 40%, your $900 collateral becomes risky and may face liquidation.'
+        },
+        {
+          title: 'Interest Rate Models and Yield Strategies',
+          explanation: `Dynamic Interest Rates:
+• Rates adjust based on supply and demand
+• High utilization = higher rates (encourages lending)
+• Low utilization = lower rates (encourages borrowing)
+• Algorithms ensure adequate liquidity
+
+Yield farming strategies:
+• Lending stablecoins for predictable yield
+• Borrowing against volatile assets for leverage
+• Recursive lending (borrow to lend more)
+• Cross-protocol arbitrage opportunities
+
+Risk considerations:
+• Smart contract risk (code bugs)
+• Liquidation risk (collateral price drops)
+• Interest rate risk (rates can change)
+• Platform risk (protocol governance changes)`,
+          example: 'You could lend USDC at 5% APY, then use that as collateral to borrow more USDC and lend again, amplifying your yield but also increasing risk.'
+        }
+      ],
+      keyTakeaways: [
+        'DeFi lending removes banks as intermediaries, giving better rates to lenders',
+        'Over-collateralization enables lending without credit checks or identity verification',
+        'Interest rates adjust automatically based on supply and demand',
+        'Liquidation protects lenders but requires borrowers to manage risk carefully',
+        'DeFi lending provides global access to credit and yield opportunities'
+      ]
+    },
+    quiz: [
+      {
+        q: 'Why do DeFi lending protocols require over-collateralization?',
+        opts: ['To comply with government regulations', 'To protect lenders from borrower default without credit checks', 'To increase protocol profits', 'To make borrowing more expensive'],
+        correct: 1,
+        explanation: 'Over-collateralization protects lenders from default risk since there are no credit checks. The collateral value exceeds the loan value, ensuring lenders can be repaid.'
+      },
+      {
+        q: 'What triggers liquidation in DeFi lending protocols?',
+        opts: ['Missing monthly payments', 'Borrower identity verification failure', 'Collateral value dropping below liquidation threshold', 'Government intervention'],
+        correct: 2,
+        explanation: 'Liquidation occurs when the value of collateral drops below the required threshold relative to the borrowed amount, threatening the protocol\'s ability to repay lenders.'
+      },
+      {
+        q: 'How are interest rates determined in DeFi lending protocols?',
+        opts: ['Set by central banks', 'Voted on by token holders', 'Automatically adjusted based on supply and demand', 'Fixed by the protocol founders'],
+        correct: 2,
+        explanation: 'Interest rates adjust automatically through algorithmic models based on supply and demand - high utilization increases rates to attract more lenders.'
+      }
+    ]
+  },
+
+  yield: {
+    title: 'Yield Farming & Liquidity Mining',
+    difficulty: 'Advanced',
+    estimatedTime: '30 minutes',
+    prerequisites: ['lending'],
+    category: 'DeFi Advanced',
+    content: {
+      introduction: `Yield farming combines multiple DeFi strategies to maximize returns on your crypto assets. It's like being a sophisticated investor who moves capital to where it earns the highest yield, but with additional complexity and risk.`,
+      
+      concepts: [
+        {
+          title: 'Understanding Yield Farming Mechanics',
+          explanation: `Liquidity Provision:
+• Deposit tokens into AMM pools (e.g., ETH/USDC on Uniswap)
+• Earn trading fees from swaps (typically 0.05%-1%)
+• Receive LP tokens representing your pool share
+• Subject to impermanent loss risk
+
+Liquidity Mining/Incentives:
+• Protocols distribute governance tokens to attract liquidity
+• Stake LP tokens to earn additional rewards
+• Can dramatically boost total yields (sometimes 100%+ APY)
+• Reward rates often decrease over time
+
+Compounding strategies:
+• Claim rewards regularly and reinvest
+• Use auto-compounding vaults (Yearn, Beefy)
+• Maximize efficiency through automation
+• Balance gas costs with compounding frequency`,
+          example: 'Provide ETH/USDC liquidity on Uniswap (earn 0.3% fees), stake LP tokens on Arbitrum (earn ARB rewards), then compound ARB back into the position.'
+        },
+        {
+          title: 'Impermanent Loss and Risk Management',
+          explanation: `Impermanent Loss explained:
+• Occurs when token prices diverge from initial deposit ratio
+• You end up with less value than simply holding tokens
+• "Impermanent" because loss only realizes when you withdraw
+• More severe with volatile token pairs
+
+Example calculation:
+• Deposit 1 ETH + 2000 USDC when ETH = $2000
+• ETH price doubles to $4000
+• Pool rebalances to maintain 50/50 value ratio
+• You now have 0.707 ETH + 2828 USDC = $5656
+• But holding would give you 1 ETH + 2000 USDC = $6000
+• Impermanent loss = $344 (5.7%)
+
+Mitigation strategies:
+• Choose correlated pairs (ETH/stETH)
+• Ensure farming rewards exceed potential IL
+• Use stable pair strategies (USDC/USDT)
+• Monitor price ratios and exit if needed`,
+          example: 'Providing liquidity to ETH/USDC might lose money if ETH pumps 100%, but the trading fees and token rewards often compensate for this loss.'
+        },
+        {
+          title: 'Advanced Strategies and Protocol Risks',
+          explanation: `Multi-protocol strategies:
+• Leverage: Borrow assets to increase position size
+• Delta-neutral: Hedge directional risk while farming yield
+• Cross-chain arbitrage: Move between networks for best rates
+• Vault strategies: Automated position management
+
+Protocol-specific risks:
+• Smart contract bugs (code vulnerabilities)
+• Economic attacks (flash loan exploits)
+• Governance risks (malicious proposals)
+• Regulatory risks (protocol shutdowns)
+
+Due diligence framework:
+• Audit history and security track record
+• Total Value Locked (TVL) and age of protocol
+• Team reputation and transparency
+• Token emission schedules and sustainability
+• Insurance coverage (Nexus Mutual, etc.)`,
+          example: 'A delta-neutral strategy might involve providing ETH/USDC liquidity while shorting ETH on a derivatives platform, earning LP fees without ETH price exposure.'
+        }
+      ],
+      keyTakeaways: [
+        'Yield farming can provide higher returns but comes with additional complexity and risk',
+        'Impermanent loss is the main risk when providing liquidity to volatile pairs',
+        'Token incentives can make yield farming profitable despite impermanent loss',
+        'Always research protocol security, audits, and team reputation before farming',
+        'Advanced strategies require active management and risk monitoring'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What is impermanent loss in liquidity provision?',
+        opts: ['Permanent loss of funds due to smart contract bugs', 'Temporary loss due to network congestion', 'Loss compared to holding tokens when prices diverge', 'Loss from paying too much in transaction fees'],
+        correct: 2,
+        explanation: 'Impermanent loss occurs when providing liquidity and token prices diverge from the initial ratio, resulting in less value than simply holding the tokens.'
+      },
+      {
+        q: 'Why do protocols offer liquidity mining rewards?',
+        opts: ['To comply with government regulations', 'To attract liquidity and bootstrap their platforms', 'To reduce the total supply of their tokens', 'To pay for development costs'],
+        correct: 1,
+        explanation: 'Protocols distribute tokens as incentives to attract liquidity providers, which increases trading volume and helps bootstrap their platforms.'
+      },
+      {
+        q: 'What is the main way to mitigate impermanent loss?',
+        opts: ['Only provide liquidity to volatile token pairs', 'Withdraw liquidity immediately after any price movement', 'Choose correlated pairs or ensure rewards exceed potential loss', 'Never compound your rewards'],
+        correct: 2,
+        explanation: 'Impermanent loss can be mitigated by choosing correlated token pairs (like ETH/stETH) or ensuring that trading fees and farming rewards exceed potential impermanent loss.'
+      },
+      {
+        q: 'What does "APY" mean in yield farming?',
+        opts: ['Annual Percentage Yield - your total return if compounded over a year', 'A Protocol Yield - the protocol\'s total earnings', 'Always Positive Yield - guaranteed returns', 'Advanced Protocol Yarding - a technical term'],
+        correct: 0,
+        explanation: 'APY (Annual Percentage Yield) represents the total return you would earn if the current rate was maintained and compounded over a full year.'
+      },
+      {
+        q: 'Why should you research protocol audits before yield farming?',
+        opts: ['Audits guarantee no bugs exist', 'Audits help identify potential smart contract vulnerabilities', 'Audits are required by law', 'Audits determine token prices'],
+        correct: 1,
+        explanation: 'Security audits help identify potential smart contract vulnerabilities and bugs that could lead to loss of funds, though they don\'t guarantee complete safety.'
+      },
+      {
+        q: 'What is "total value locked" (TVL) and why does it matter?',
+        opts: ['The amount of tokens locked forever', 'The total value of assets deposited in a protocol, indicating trust and liquidity', 'The protocol\'s market cap', 'The founder\'s personal wealth'],
+        correct: 1,
+        explanation: 'TVL measures the total value of assets deposited in a DeFi protocol. Higher TVL generally indicates greater user trust, liquidity, and protocol maturity.'
+      }
+    ]
+  },
+
+  security: {
+    title: 'DeFi Security & Risk Management',
+    difficulty: 'Advanced',
+    estimatedTime: '28 minutes',
+    prerequisites: ['yield'],
+    category: 'DeFi Advanced',
+    content: {
+      introduction: `DeFi offers incredible opportunities, but with great power comes great responsibility. Understanding security risks and how to protect yourself is crucial for safely navigating the decentralized finance ecosystem.`,
+      
+      concepts: [
+        {
+          title: 'Common DeFi Attack Vectors',
+          explanation: `Smart Contract Bugs:
+• Coding errors that can be exploited
+• Reentrancy attacks that drain funds
+• Flash loan exploits manipulating prices
+• Logic errors in token calculations
+
+Social Engineering:
+• Fake websites mimicking real protocols
+• Phishing emails requesting private keys
+• Social media scams promising guaranteed returns
+• Fake customer support accounts
+
+Economic Attacks:
+• Oracle manipulation affecting price feeds
+• Governance attacks controlling protocol decisions
+• Pump and dump schemes in low-liquidity tokens
+• MEV attacks extracting value from transactions`,
+          example: 'A common scam is creating a fake Uniswap website (umiswap.com instead of uniswap.org) that steals private keys when users try to connect their wallets.'
+        },
+        {
+          title: 'Risk Assessment Framework',
+          explanation: `Protocol Risk Evaluation:
+• Team transparency and reputation
+• Code audit history and findings
+• Time since deployment (battle-tested)
+• Total Value Locked and user adoption
+• Governance token distribution
+
+Financial Risk Management:
+• Never invest more than you can afford to lose
+• Diversify across multiple protocols and strategies
+• Start with small amounts when testing new protocols
+• Understand correlation risks (related assets moving together)
+• Set stop-losses and risk limits
+
+Technical Risk Factors:
+• Smart contract complexity and upgrade mechanisms
+• Oracle dependencies and price feed reliability
+• Cross-chain bridge security for multi-chain protocols
+• Token economic sustainability and inflation models`,
+          example: 'A protocol launched yesterday with anonymous founders and no audits carries much higher risk than a 2-year-old protocol with known team and multiple security audits.'
+        },
+        {
+          title: 'Protecting Yourself in DeFi',
+          explanation: `Wallet Security Best Practices:
+• Use hardware wallets for large amounts
+• Keep hot wallets for small daily transactions only
+• Regular security checkups and software updates
+• Multiple wallet strategy for risk isolation
+
+Transaction Safety:
+• Always verify contract addresses before interacting
+• Check transaction details before signing
+• Use reputable frontends and official links only
+• Enable transaction simulation when available
+
+Emergency Procedures:
+• Know how to revoke token approvals quickly
+• Keep emergency funds on different wallets
+• Have contact information for security researchers
+• Document all transactions for potential recovery`,
+          example: 'If you notice unauthorized transactions, immediately revoke all token approvals using tools like Revoke.cash and move remaining funds to a new wallet.'
+        }
+      ],
+      keyTakeaways: [
+        'DeFi risks include smart contract bugs, economic attacks, and social engineering',
+        'Never invest more than you can afford to lose in experimental protocols',
+        'Security audits help but don\'t guarantee complete safety',
+        'Use hardware wallets and verify all contract addresses before interacting',
+        'Have emergency procedures ready for quick response to potential compromises'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What is the most important security practice when using DeFi protocols?',
+        opts: ['Always use the maximum gas fee', 'Verify contract addresses and never share private keys', 'Only use protocols with the highest APY', 'Invest all your money in a single protocol'],
+        correct: 1,
+        explanation: 'Verifying contract addresses ensures you\'re interacting with legitimate protocols, and protecting your private keys prevents unauthorized access to your funds.'
+      },
+      {
+        q: 'What does a security audit tell you about a DeFi protocol?',
+        opts: ['It guarantees the protocol is 100% safe', 'It identifies potential vulnerabilities but doesn\'t guarantee safety', 'It determines the token price', 'It provides government approval'],
+        correct: 1,
+        explanation: 'Security audits help identify potential vulnerabilities and coding errors, but they cannot guarantee complete safety as new exploits and edge cases may still exist.'
+      },
+      {
+        q: 'How should you approach yield farming from a risk management perspective?',
+        opts: ['Invest everything in the highest APY protocol', 'Start small, diversify, and only risk what you can afford to lose', 'Follow anonymous social media influencers', 'Never read smart contracts or audits'],
+        correct: 1,
+        explanation: 'Proper risk management involves starting with small amounts, diversifying across protocols, and only investing what you can afford to lose completely.'
+      },
+      {
+        q: 'What should you do if you suspect your wallet is compromised?',
+        opts: ['Wait and see what happens', 'Immediately move funds to a new wallet and revoke approvals', 'Post about it on social media', 'Contact the protocol customer support'],
+        correct: 1,
+        explanation: 'Quick action is crucial - immediately transfer remaining funds to a new secure wallet and revoke all token approvals to prevent further unauthorized transactions.'
+      },
+      {
+        q: 'Why might high APY yields be a red flag?',
+        opts: ['High yields are always sustainable', 'They may indicate unsustainable token emission or high risk', 'They are regulated by governments', 'They can only be achieved by experts'],
+        correct: 1,
+        explanation: 'Extremely high yields often indicate unsustainable token emission rates, new/unproven protocols, or high underlying risks that justify the elevated returns.'
+      }
+    ]
+  },
+
+  bridges: {
+    title: 'Cross-Chain Bridges & Interoperability',
+    difficulty: 'Advanced',
+    estimatedTime: '25 minutes',
+    prerequisites: ['security'],
+    category: 'DeFi Advanced',
+    content: {
+      introduction: `As the blockchain ecosystem grows with multiple networks, cross-chain bridges become essential infrastructure connecting isolated blockchain islands into a unified DeFi ocean.`,
+      
+      concepts: [
+        {
+          title: 'Understanding Cross-Chain Bridges',
+          explanation: `What Bridges Solve:
+• Each blockchain is isolated by default
+• Assets on Ethereum can't naturally move to Polygon
+• Users want to access DeFi across multiple chains
+• Liquidity becomes fragmented across networks
+
+How Bridges Work:
+• Lock tokens on source chain (e.g., Ethereum)
+• Mint equivalent tokens on destination chain (e.g., Polygon)
+• Maintain 1:1 backing ratio through smart contracts
+• Allow reverse process to unlock original tokens
+
+Types of Bridges:
+• Native bridges: Built by the blockchain teams themselves
+• Third-party bridges: Independent protocols connecting chains
+• Trusted bridges: Require trust in validators or committees
+• Trustless bridges: Use cryptographic proofs for security`,
+          example: 'Using the Polygon bridge, you can lock 100 USDC on Ethereum and receive 100 USDC on Polygon to access cheaper DeFi, then bridge back when needed.'
+        },
+        {
+          title: 'Bridge Security and Trade-offs',
+          explanation: `Security Models:
+• Validator sets: Groups of validators sign off on transfers
+• Optimistic verification: Assume valid unless challenged
+• Zero-knowledge proofs: Cryptographic proof of validity
+• Multi-signature schemes: Require multiple parties to approve
+
+Common Risks:
+• Smart contract bugs in bridge protocols
+• Validator corruption or collusion
+• Oracle attacks manipulating bridge operations
+• Front-end attacks showing fake bridge interfaces
+
+Security vs Speed Trade-offs:
+• Faster bridges often have more trust assumptions
+• More secure bridges typically have longer finality times
+• Native bridges usually most secure but limited functionality
+• Third-party bridges offer more features but additional risks`,
+          example: 'The Ethereum-Arbitrum bridge is very secure but takes 7 days to withdraw, while some third-party bridges are faster but require trusting additional validators.'
+        },
+        {
+          title: 'Practical Cross-Chain Strategies',
+          explanation: `When to Use Bridges:
+• Accessing lower-cost transactions on Layer 2s
+• Participating in chain-specific DeFi opportunities
+• Arbitrage opportunities across chains
+• Diversifying across blockchain ecosystems
+
+Bridge Selection Criteria:
+• Security audits and track record
+• Liquidity and fee levels
+• Supported assets and chains
+• Bridge time and user experience
+
+Best Practices:
+• Start with small amounts when testing new bridges
+• Use official bridge interfaces only
+• Understand withdrawal timeframes
+• Keep transaction records for all bridge operations
+• Consider native bridges when available`,
+          example: 'A farmer in Kenya might bridge stablecoins to Polygon for cheaper transactions, then use local DeFi protocols for micro-lending without paying high Ethereum fees.'
+        }
+      ],
+      keyTakeaways: [
+        'Bridges connect isolated blockchains but introduce additional security risks',
+        'Different bridge types offer various trade-offs between security, speed, and cost',
+        'Always verify bridge contract addresses and use official interfaces',
+        'Native bridges are typically more secure than third-party alternatives',
+        'Cross-chain DeFi enables access to opportunities across multiple ecosystems'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What is the primary purpose of cross-chain bridges?',
+        opts: ['To create new cryptocurrencies', 'To connect isolated blockchains and enable asset transfers', 'To replace existing blockchains', 'To provide government oversight'],
+        correct: 1,
+        explanation: 'Cross-chain bridges solve the isolation problem between blockchains, allowing assets and data to move between different networks that couldn\'t otherwise communicate.'
+      },
+      {
+        q: 'How do most bridges maintain a 1:1 ratio between original and bridged tokens?',
+        opts: ['Government guarantees', 'Lock tokens on source chain and mint equivalent on destination', 'Print unlimited tokens', 'Use traditional banking'],
+        correct: 1,
+        explanation: 'Most bridges work by locking original tokens in a smart contract on the source chain and minting an equivalent amount of bridged tokens on the destination chain.'
+      },
+      {
+        q: 'What is typically the safest type of bridge to use?',
+        opts: ['The fastest bridge available', 'Native bridges built by the blockchain teams', 'Anonymous third-party bridges', 'Bridges with the highest yields'],
+        correct: 1,
+        explanation: 'Native bridges built by the blockchain teams themselves are typically the most secure as they have the strongest security guarantees and are most closely aligned with the chain\'s security model.'
+      },
+      {
+        q: 'Why might someone choose a faster but less secure bridge?',
+        opts: ['They enjoy taking risks', 'For time-sensitive arbitrage opportunities or urgent transfers', 'Faster bridges are always better', 'Security doesn\'t matter in DeFi'],
+        correct: 1,
+        explanation: 'Users might accept additional risk for faster bridges when engaging in time-sensitive activities like arbitrage trading or when they need urgent access to funds on another chain.'
+      },
+      {
+        q: 'What should you always verify before using a bridge?',
+        opts: ['The weather forecast', 'The bridge contract address and official interface', 'Your social media followers', 'The bridge team\'s personal lives'],
+        correct: 1,
+        explanation: 'Always verify you\'re using the legitimate bridge contract address and official interface to avoid fake bridges designed to steal your funds.'
+      }
+    ]
+  },
+
+  governance: {
+    title: 'Staking & Governance',
+    difficulty: 'Intermediate',
+    estimatedTime: '22 minutes',
+    prerequisites: ['bridges'],
+    category: 'DeFi Advanced',
+    content: {
+      introduction: `Staking and governance are fundamental to how decentralized protocols operate and evolve. They represent the democratic backbone of DeFi, allowing token holders to participate in protocol decisions and earn rewards.`,
+      
+      concepts: [
+        {
+          title: 'Understanding Protocol Governance',
+          explanation: `Decentralized Governance:
+• Token holders vote on protocol changes
+• No central authority controls the protocol
+• Proposals can change fees, features, or token economics
+• Voting power usually proportional to token holdings
+
+Governance Process:
+1. Anyone can submit improvement proposals
+2. Community discusses and provides feedback
+3. Formal voting period with specific duration
+4. Proposals require minimum participation and approval
+5. Successful proposals are automatically implemented
+
+Types of Governance Decisions:
+• Parameter changes (interest rates, fees)
+• Protocol upgrades and new features
+• Treasury spending and grants
+• Emergency responses to security issues
+• Integration with other protocols`,
+          example: 'Uniswap token holders vote on which new blockchains to deploy to, how to use the protocol treasury, and what fees to charge for different types of swaps.'
+        },
+        {
+          title: 'Staking Mechanisms and Rewards',
+          explanation: `Proof of Stake Validation:
+• Validators stake tokens as collateral
+• They process transactions and maintain network security
+• Earn rewards for honest behavior
+• Risk losing staked tokens for malicious acts
+
+DeFi Protocol Staking:
+• Stake governance tokens to earn protocol revenues
+• Participate in protocol security and decision-making
+• Often combined with voting rights
+• May include slashing for governance misconduct
+
+Liquid Staking:
+• Stake tokens while receiving liquid derivatives
+• Examples: stETH for staked Ethereum
+• Allows staking rewards while maintaining liquidity
+• Can use staked tokens in other DeFi protocols
+
+Delegation:
+• Delegate voting power to trusted representatives
+• Maintain ownership while outsourcing governance decisions
+• Useful for users who lack time or expertise
+• Delegates often provide voting rationale and updates`,
+          example: 'You can stake ETH to earn staking rewards while receiving stETH tokens that can be used in DeFi protocols like Aave for lending, effectively earning double yield.'
+        },
+        {
+          title: 'Governance Participation Strategies',
+          explanation: `Active Participation:
+• Research all proposals thoroughly
+• Participate in community discussions
+• Vote on every proposal within your expertise
+• Run for delegate position if experienced
+
+Delegation Strategy:
+• Choose delegates with aligned values
+• Review delegate voting history and rationale
+• Diversify delegation across multiple trusted delegates
+• Regularly reassess delegate performance
+
+Economic Considerations:
+• Governance tokens often accrue protocol value
+• Staking rewards vs opportunity cost analysis
+• Gas costs for voting (especially on Ethereum)
+• Long-term token lockup periods and liquidity
+
+Risk Management:
+• Understand slashing conditions if they exist
+• Monitor protocol health and governance activity
+• Avoid concentration in single governance token
+• Stay informed about major protocol changes`,
+          example: 'A community member in Nigeria might delegate their governance tokens to a trusted delegate who votes during their local nighttime hours, ensuring their voice is heard without staying awake for every vote.'
+        }
+      ],
+      keyTakeaways: [
+        'Governance tokens give holders voting rights in protocol decisions',
+        'Staking provides rewards but often requires locking tokens for periods',
+        'Delegation allows participation without active involvement in every decision',
+        'Liquid staking enables earning rewards while maintaining token liquidity',
+        'Governance participation helps ensure protocols serve user interests'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What is the primary purpose of governance tokens in DeFi protocols?',
+        opts: ['To provide guaranteed profits', 'To give holders voting rights in protocol decisions', 'To replace Bitcoin', 'To pay transaction fees'],
+        correct: 1,
+        explanation: 'Governance tokens primarily give holders the right to vote on protocol decisions like parameter changes, upgrades, and treasury spending, enabling decentralized control.'
+      },
+      {
+        q: 'What is liquid staking?',
+        opts: ['Staking tokens in water', 'Unstaking tokens immediately', 'Staking while receiving tradeable derivative tokens', 'A type of swimming pool'],
+        correct: 2,
+        explanation: 'Liquid staking allows you to stake tokens (like ETH) while receiving liquid derivative tokens (like stETH) that can be traded or used in DeFi while still earning staking rewards.'
+      },
+      {
+        q: 'Why might someone choose to delegate their governance voting power?',
+        opts: ['They want to give up ownership of their tokens', 'They lack time or expertise to research every proposal', 'Delegation guarantees higher returns', 'It\'s required by law'],
+        correct: 1,
+        explanation: 'Delegation allows token holders to participate in governance through trusted representatives when they lack the time, expertise, or availability to research and vote on every proposal.'
+      },
+      {
+        q: 'What risk do validators face in Proof of Stake networks?',
+        opts: ['They might get too many rewards', 'They could lose staked tokens for malicious behavior (slashing)', 'They have to work too hard', 'They get government penalties'],
+        correct: 1,
+        explanation: 'Validators risk having their staked tokens slashed (partially confiscated) if they behave maliciously or fail to follow protocol rules, which incentivizes honest behavior.'
+      },
+      {
+        q: 'How does governance benefit the broader DeFi ecosystem?',
+        opts: ['It centralizes control with governments', 'It enables democratic evolution and user-driven improvements', 'It eliminates all risks', 'It guarantees price increases'],
+        correct: 1,
+        explanation: 'Governance allows protocols to evolve democratically based on user needs and market conditions, leading to better products and more sustainable DeFi ecosystem development.'
+      }
+    ]
+  },
+
+  remittances: {
+    title: 'Cross-Border Payments & Remittances',
+    difficulty: 'Intermediate',
+    estimatedTime: '26 minutes',
+    prerequisites: ['governance'],
+    category: 'Real-World Applications',
+    content: {
+      introduction: `Traditional cross-border payments are slow, expensive, and often inaccessible to those who need them most. DeFi offers revolutionary solutions for global money transfers, especially benefiting underserved communities worldwide.`,
+      
+      concepts: [
+        {
+          title: 'Problems with Traditional Remittances',
+          explanation: `High Costs:
+• Western Union charges 5-15% in fees
+• Banks add hidden exchange rate markups
+• Multiple intermediaries each take a cut
+• Small transfers face disproportionately high fees
+
+Slow Settlement:
+• Traditional transfers take 3-7 business days
+• Weekends and holidays cause additional delays
+• Multiple correspondent banks slow the process
+• Recipients often wait days for emergency funds
+
+Limited Access:
+• Requires bank accounts on both ends
+• Many rural areas lack banking infrastructure
+• Documentation requirements exclude undocumented workers
+• Limited operating hours restrict urgent transfers
+
+Transparency Issues:
+• Hidden fees and poor exchange rates
+• No real-time tracking of transfer status
+• Recipients uncertain about arrival times
+• Limited recourse for failed transfers`,
+          example: 'A construction worker in the US sending $200 to family in rural Guatemala might pay $25 in fees and wait 5 days, while the family travels hours to reach a bank or pickup location.'
+        },
+        {
+          title: 'DeFi Solutions for Cross-Border Payments',
+          explanation: `Stablecoin Transfers:
+• Send USDC instantly anywhere in the world
+• Fees typically under $1 on Layer 2 networks
+• 24/7 availability without banking hours
+• Recipients receive stable value in USD terms
+
+Multi-Chain Strategies:
+• Use bridges to access cheapest networks
+• Arbitrum and Polygon for low-cost transfers
+• Local exchanges for cash-out options
+• Mobile money integration in developing markets
+
+DeFi Payment Rails:
+• Automated conversion between currencies
+• Smart contracts handle complex routing
+• Liquidity pools enable instant settlement
+• No need for pre-funded correspondent accounts
+
+Local Partner Networks:
+• Local agents provide cash-in/cash-out services
+• Mobile money integration (M-Pesa, GCash)
+• Cryptocurrency ATMs in major cities
+• Peer-to-peer marketplaces for local exchange`,
+          example: 'Using USDC on Polygon, a domestic worker can send money from Dubai to Philippines in under 30 seconds for $0.02 in fees, with the recipient converting to pesos through local P2P markets.'
+        },
+        {
+          title: 'Building Inclusive Payment Systems',
+          explanation: `Mobile-First Solutions:
+• Smartphone-based wallets for financial inclusion
+• QR codes for easy address sharing
+• Voice-based instructions in local languages
+• Offline transaction capabilities for poor connectivity
+
+Education and Onboarding:
+• Community education about crypto basics
+• Local language support and cultural adaptation
+• Gradual onboarding with small test transactions
+• Partnership with local community organizations
+
+Regulatory Compliance:
+• AML/KYC solutions for legitimate users
+• Compliance with local money transmission laws
+• Partnership with licensed money service businesses
+• Transparent reporting for regulatory authorities
+
+Risk Management:
+• Stable value preservation through stablecoins
+• Price protection mechanisms for volatile periods
+• Insurance solutions for smart contract risks
+• Multiple backup options for fund recovery`,
+          example: 'A community organization in Kenya partners with a DeFi protocol to provide smartphone-based remittance services, teaching families to receive money from relatives abroad directly to their mobile wallets.'
+        }
+      ],
+      keyTakeaways: [
+        'Traditional remittances are expensive, slow, and exclude many who need them most',
+        'DeFi enables near-instant global transfers with minimal fees',
+        'Stablecoins provide stable value for cross-border transactions',
+        'Mobile-first solutions can achieve financial inclusion at scale',
+        'Local partnership networks are essential for cash-in/cash-out services'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What is the typical fee range for traditional remittance services like Western Union?',
+        opts: ['0.1-1%', '2-3%', '5-15%', '20-30%'],
+        correct: 2,
+        explanation: 'Traditional remittance services typically charge 5-15% in fees, making them expensive especially for small transfers that low-income workers commonly send.'
+      },
+      {
+        q: 'How can stablecoins improve cross-border payments?',
+        opts: ['They fluctuate wildly in value', 'They provide stable value and fast settlement', 'They require traditional banks', 'They only work in developed countries'],
+        correct: 1,
+        explanation: 'Stablecoins like USDC maintain stable value while enabling fast, low-cost transfers that settle in minutes rather than days.'
+      },
+      {
+        q: 'What is a major advantage of DeFi payments over traditional remittances?',
+        opts: ['They require more documentation', 'They operate 24/7 without banking hours', 'They are slower but more secure', 'They need government approval'],
+        correct: 1,
+        explanation: 'DeFi payments operate 24/7 globally, allowing urgent transfers during weekends, holidays, and outside traditional banking hours.'
+      },
+      {
+        q: 'Why might Layer 2 solutions be particularly important for remittances?',
+        opts: ['They are more regulated', 'They reduce transaction costs making small transfers viable', 'They require bank accounts', 'They work slower'],
+        correct: 1,
+        explanation: 'Layer 2 solutions dramatically reduce transaction costs, making small remittance amounts economically viable where traditional services would charge disproportionate fees.'
+      },
+      {
+        q: 'What role do local partner networks play in DeFi remittances?',
+        opts: ['They increase costs significantly', 'They provide cash-in/cash-out services for users without crypto experience', 'They slow down transactions', 'They are unnecessary for DeFi'],
+        correct: 1,
+        explanation: 'Local partners provide essential cash-in/cash-out services, allowing recipients to convert cryptocurrency to local currency without needing deep crypto knowledge.'
+      }
+    ]
+  },
+
+  microfinance: {
+    title: 'Micro-Finance & Community Lending',
+    difficulty: 'Intermediate',
+    estimatedTime: '24 minutes',
+    prerequisites: ['remittances'],
+    category: 'Real-World Applications',
+    content: {
+      introduction: `Micro-finance has lifted millions out of poverty by providing small loans to entrepreneurs excluded from traditional banking. DeFi can revolutionize micro-finance by reducing costs, increasing transparency, and enabling global participation.`,
+      
+      concepts: [
+        {
+          title: 'Traditional Micro-Finance Challenges',
+          explanation: `High Operational Costs:
+• Physical branch networks are expensive to maintain
+• Manual loan processing and paperwork
+• High staff costs relative to small loan amounts
+• These costs are passed to borrowers as high interest rates
+
+Limited Scale and Reach:
+• Geographic constraints limit expansion
+• Difficulty serving remote rural communities
+• Capital constraints limit number of loans possible
+• Seasonal fluctuations in loan demand
+
+Trust and Social Collateral:
+• Group lending models require physical proximity
+• Social pressure mechanisms need community presence
+• Cultural and language barriers in diverse regions
+• Difficulty verifying income for informal workers
+
+Transparency Issues:
+• Borrowers often unclear about true interest rates
+• Hidden fees and charges
+• Limited competition leads to exploitation
+• Lack of standardized reporting on outcomes`,
+          example: 'A traditional micro-finance institution in rural Bangladesh might charge 25% annual interest due to high operational costs, making it difficult for small business owners to achieve profitable returns.'
+        },
+        {
+          title: 'DeFi-Enabled Micro-Finance Solutions',
+          explanation: `Smart Contract Automation:
+• Automatic loan disbursement when conditions are met
+• Programmatic interest calculations and payments
+• Reduced administrative overhead and costs
+• Transparent and auditable loan terms
+
+Global Capital Access:
+• DeFi protocols can pool capital from worldwide lenders
+• Lower capital costs through global competition
+• Seasonal demand can be met with global liquidity
+• Risk diversification across geographies and sectors
+
+Alternative Collateral Models:
+• On-chain credit scoring using transaction history
+• Social tokens representing community endorsements
+• Future cash flow tokenization
+• Micro-insurance integration for risk mitigation
+
+Transparency and Programmability:
+• All loan terms visible on blockchain
+• Real-time tracking of fund usage
+• Automated reporting on outcomes and impact
+• Integration with identity and reputation systems`,
+          example: 'A smart contract could automatically release micro-loans to verified small farmers based on satellite data showing crop planting, with repayment triggered by harvest season data and market price feeds.'
+        },
+        {
+          title: 'Community-Driven Lending Models',
+          explanation: `Decentralized Autonomous Organizations (DAOs):
+• Community members vote on loan approvals
+• Local knowledge guides lending decisions
+• Profit-sharing with community stakeholders
+• Democratic governance of lending policies
+
+Reputation and Social Capital:
+• On-chain reputation building through successful repayments
+• Community endorsement systems
+• Peer-to-peer vouching mechanisms
+• Integration with existing social networks
+
+Flexible Repayment Mechanisms:
+• Income-based repayment adjustments
+• Seasonal payment schedules for agricultural loans
+• Micro-payment streams through blockchain
+• Grace periods during economic hardships
+
+Financial Education Integration:
+• Educational modules required before borrowing
+• Ongoing financial literacy through smart contracts
+• Peer learning and mentorship programs
+• Integration with broader financial services`,
+          example: 'A community DAO in rural Kenya could collectively decide to fund a member\'s solar panel business, with loan terms adjusted based on seasonal income patterns and repayment tracked through mobile money integration.'
+        }
+      ],
+      keyTakeaways: [
+        'Traditional micro-finance has high costs that burden low-income borrowers',
+        'DeFi can automate processes and reduce operational overhead significantly',
+        'Global capital access through DeFi can lower interest rates for borrowers',
+        'Smart contracts enable transparent and programmable lending terms',
+        'Community-driven models can combine local knowledge with global capital'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What is one of the main reasons traditional micro-finance institutions charge high interest rates?',
+        opts: ['Greed from executives', 'High operational costs of manual processing and physical branches', 'Government requirements', 'Cryptocurrency volatility'],
+        correct: 1,
+        explanation: 'Traditional micro-finance institutions have high operational costs due to physical infrastructure, manual processes, and high staff-to-loan ratios, which are passed on to borrowers as higher interest rates.'
+      },
+      {
+        q: 'How can DeFi reduce costs in micro-finance?',
+        opts: ['By eliminating all loans', 'Through smart contract automation and reduced administrative overhead', 'By requiring higher collateral', 'By only serving wealthy customers'],
+        correct: 1,
+        explanation: 'DeFi can automate loan processing, disbursement, and repayment through smart contracts, significantly reducing the administrative costs that make traditional micro-finance expensive.'
+      },
+      {
+        q: 'What advantage does global capital access provide for micro-finance?',
+        opts: ['Higher interest rates for borrowers', 'Lower capital costs through worldwide competition', 'More government regulation', 'Slower loan processing'],
+        correct: 1,
+        explanation: 'Access to global capital markets allows micro-finance providers to source funding at lower costs through competition, which can be passed on to borrowers as lower interest rates.'
+      },
+      {
+        q: 'How might smart contracts improve transparency in micro-lending?',
+        opts: ['By hiding all loan terms', 'By making all loan terms and conditions visible on the blockchain', 'By requiring government approval', 'By eliminating all documentation'],
+        correct: 1,
+        explanation: 'Smart contracts can make all loan terms, interest calculations, and payment schedules transparent and auditable on the blockchain, reducing exploitation and hidden fees.'
+      },
+      {
+        q: 'What role can community DAOs play in micro-finance?',
+        opts: ['They centralize all decisions with banks', 'They enable community members to democratically decide on loan approvals using local knowledge', 'They eliminate all lending', 'They require government oversight'],
+        correct: 1,
+        explanation: 'Community DAOs can democratize lending decisions by allowing local members to vote on loan approvals, combining local knowledge with transparent governance mechanisms.'
+      }
+    ]
+  },
+
+  savings: {
+    title: 'DeFi Savings & Yield Optimization',
+    difficulty: 'Beginner',
+    estimatedTime: '20 minutes',
+    prerequisites: ['microfinance'],
+    category: 'Real-World Applications',
+    content: {
+      introduction: `Traditional savings accounts offer minimal returns while inflation erodes purchasing power. DeFi provides new opportunities for savers to earn meaningful yields on their money, especially important for people in countries with high inflation or limited banking options.`,
+      
+      concepts: [
+        {
+          title: 'Traditional Savings Limitations',
+          explanation: `Low Interest Rates:
+• Most savings accounts offer 0.01-2% annual interest
+• Often below inflation rate, causing real value loss
+• Banks profit from the spread between deposits and loans
+• Emergency fund growth doesn't keep pace with rising costs
+
+Access Barriers:
+• Minimum balance requirements exclude many people
+• Monthly maintenance fees erode small balances
+• Limited bank branches in rural areas
+• Complex account opening procedures
+
+Currency Devaluation:
+• Local currencies may lose value rapidly in some countries
+• Limited access to stable foreign currencies
+• Capital controls prevent moving money abroad
+• Inflation protection options are expensive or unavailable`,
+          example: 'A teacher in Argentina earning pesos might see their savings lose 50%+ of value annually due to inflation, with local banks offering interest rates far below inflation levels.'
+        },
+        {
+          title: 'DeFi Yield Opportunities',
+          explanation: `Stablecoin Savings:
+• Earn 3-8% APY on USD stablecoins like USDC
+• Protection against local currency devaluation
+• No minimum balance requirements
+• 24/7 access to funds
+
+Automated Yield Optimization:
+• Yield aggregators automatically find best rates
+• Compound interest through auto-reinvestment
+• Risk-adjusted returns across multiple protocols
+• Professional strategy management for small savers
+
+Flexible Terms:
+• No lock-up periods for many savings products
+• Withdraw anytime without penalties
+• Start with any amount, no minimums
+• Choose risk level appropriate for your situation
+
+Dollar-Cost Averaging:
+• Automated regular investments
+• Reduce timing risk through consistent deposits
+• Build savings habits through smart contracts
+• Access to global DeFi markets from anywhere`,
+          example: 'A freelancer in Nigeria could automatically convert earnings to USDC and deposit into a yield protocol earning 5% APY, protecting against naira devaluation while growing savings.'
+        },
+        {
+          title: 'Building a DeFi Savings Strategy',
+          explanation: `Risk Management:
+• Start with established, audited protocols
+• Diversify across multiple platforms
+• Keep emergency funds in easily accessible stablecoins
+• Understand smart contract risks
+
+Progressive Approach:
+• Begin with small amounts to learn the system
+• Gradually increase as comfort and knowledge grow
+• Test withdrawals to understand the process
+• Document all transactions for record-keeping
+
+Optimization Techniques:
+• Compare yields across different protocols
+• Consider gas costs in yield calculations
+• Use Layer 2 networks for smaller amounts
+• Monitor protocol changes and adjust accordingly
+
+Education and Security:
+• Learn about the protocols you're using
+• Secure wallet practices and seed phrase storage
+• Stay informed about DeFi developments
+• Connect with local DeFi communities for support`,
+          example: 'A small business owner might start by putting 10% of monthly profits into a stablecoin savings protocol, gradually increasing as they become comfortable with the technology and see consistent returns.'
+        }
+      ],
+      keyTakeaways: [
+        'Traditional savings accounts often lose purchasing power to inflation',
+        'DeFi offers higher yields while maintaining reasonable liquidity',
+        'Stablecoins provide inflation protection for people in unstable currencies',
+        'Automated yield optimization makes professional strategies accessible to small savers',
+        'Starting small and gradually increasing exposure helps manage risks while learning'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What is the main problem with traditional savings accounts in many countries?',
+        opts: ['They offer too high returns', 'Interest rates are often below inflation, causing real value loss', 'They require cryptocurrency knowledge', 'They are too secure'],
+        correct: 1,
+        explanation: 'Traditional savings accounts often offer interest rates below the inflation rate, meaning savers actually lose purchasing power over time even though their nominal balance increases.'
+      },
+      {
+        q: 'How can stablecoins help savers in countries with high inflation?',
+        opts: ['They fluctuate with local currency', 'They provide exposure to stable currencies like USD', 'They require government approval', 'They only work for wealthy people'],
+        correct: 1,
+        explanation: 'Stablecoins pegged to stable currencies like USD can protect savings from local currency devaluation and hyperinflation, maintaining purchasing power better than volatile local currencies.'
+      },
+      {
+        q: 'What advantage do DeFi yield aggregators provide to small savers?',
+        opts: ['They guarantee no losses', 'They automatically optimize yields across protocols like professional managers', 'They require large minimum investments', 'They eliminate all risks'],
+        correct: 1,
+        explanation: 'Yield aggregators automatically move funds to the highest-yielding opportunities and compound returns, providing professional-level optimization that would be impractical for small individual savers.'
+      },
+      {
+        q: 'Why might Layer 2 networks be important for small-scale DeFi savings?',
+        opts: ['They have higher fees', 'They reduce transaction costs making small deposits economical', 'They are less secure', 'They require government licenses'],
+        correct: 1,
+        explanation: 'Layer 2 networks have much lower transaction fees, making it economical for small savers to make frequent deposits and withdrawals without fees consuming their returns.'
+      },
+      {
+        q: 'What is a recommended approach for beginners to DeFi savings?',
+        opts: ['Invest all money immediately', 'Start small, learn gradually, and increase exposure over time', 'Only use experimental protocols', 'Never diversify'],
+        correct: 1,
+        explanation: 'Starting with small amounts allows beginners to learn the systems, understand risks, and build confidence before committing larger amounts to DeFi savings strategies.'
+      }
+    ]
+  },
+
+  insurance: {
+    title: 'DeFi Insurance & Protection',
+    difficulty: 'Advanced',
+    estimatedTime: '25 minutes',
+    prerequisites: ['savings'],
+    category: 'Real-World Applications',
+    content: {
+      introduction: `As DeFi grows, so do the risks of smart contract bugs, protocol failures, and economic exploits. DeFi insurance protocols provide protection against these risks, making the ecosystem safer for everyone.`,
+      
+      concepts: [
+        {
+          title: 'Types of DeFi Risks Requiring Insurance',
+          explanation: `Smart Contract Risks:
+• Coding bugs that can be exploited
+• Unaudited or poorly audited contracts
+• Upgrade mechanisms that could be compromised
+• Flash loan attacks and reentrancy exploits
+
+Economic Risks:
+• Stablecoin depegging events
+• Oracle manipulation affecting prices
+• Liquidity crises in protocols
+• Governance attacks changing protocol parameters
+
+Operational Risks:
+• Private key compromise of protocol teams
+• Centralized infrastructure failures
+• Regulatory actions against protocols
+• Team abandonment or rugpulls
+
+Counterparty Risks:
+• Custodial services being hacked
+• Exchange insolvency or withdrawal freezes
+• Bridge failures resulting in locked funds
+• Wrapped token backing failures`,
+          example: 'In 2022, the Terra Luna collapse caused UST stablecoin to depeg dramatically, leading to billions in losses for users who thought they held a stable asset.'
+        },
+        {
+          title: 'DeFi Insurance Mechanisms',
+          explanation: `Coverage Protocols:
+• Nexus Mutual: Mutual insurance model with member governance
+• InsurAce: Multi-chain coverage with professional underwriting
+• Cover Protocol: Permissionless coverage creation
+• Unslashed Finance: Institutional-grade coverage
+
+Coverage Types:
+• Smart contract coverage for specific protocols
+• Stablecoin depeg protection
+• Slashing protection for stakers
+• Yield farming protection against impermanent loss
+
+Claim Assessment:
+• Decentralized claim assessment by token holders
+• Oracle-based automatic claim triggers
+• Expert panels for complex technical claims
+• Community voting on disputed claims
+
+Premium Models:
+• Risk-based pricing using on-chain data
+• Dynamic premiums adjusting to market conditions
+• Pool-based models sharing risk across members
+• Subscription models for ongoing protection`,
+          example: 'A user could buy Nexus Mutual coverage for their Compound deposits, paying a small premium to protect against smart contract exploits that could drain the protocol.'
+        },
+        {
+          title: 'Building a Risk Management Strategy',
+          explanation: `Risk Assessment Framework:
+• Evaluate protocol age, audit history, and team reputation
+• Consider TVL and user adoption as security indicators
+• Understand economic incentives and attack vectors
+• Monitor governance changes and protocol updates
+
+Insurance Portfolio Strategy:
+• Prioritize coverage for largest exposures
+• Consider correlation between different risks
+• Balance insurance costs against potential losses
+• Review and update coverage as exposures change
+
+Alternative Protection Methods:
+• Diversification across multiple protocols
+• Position sizing appropriate to risk tolerance
+• Using battle-tested protocols over experimental ones
+• Keeping reserves for potential losses
+
+Community and Education:
+• Participate in protocol governance and security discussions
+• Stay informed about emerging risks and attacks
+• Learn from past exploits and failures
+• Contribute to security through responsible disclosure`,
+          example: 'An institutional investor might allocate 1-2% of their DeFi portfolio to insurance premiums, protecting their largest positions while accepting smaller risks on diversified smaller holdings.'
+        }
+      ],
+      keyTakeaways: [
+        'DeFi involves multiple types of risks that traditional finance doesn\'t face',
+        'Insurance protocols provide protection against smart contract and economic risks',
+        'Coverage decisions should be based on risk assessment and portfolio size',
+        'Insurance costs must be balanced against potential losses and diversification benefits',
+        'The DeFi insurance space is evolving rapidly with new models and providers'
+      ]
+    },
+    quiz: [
+      {
+        q: 'What type of risk does DeFi insurance primarily protect against?',
+        opts: ['Market price volatility', 'Smart contract bugs and protocol failures', 'Government regulation', 'Internet connectivity issues'],
+        correct: 1,
+        explanation: 'DeFi insurance primarily protects against smart contract risks, protocol failures, and technical exploits that could result in permanent loss of funds, rather than normal market volatility.'
+      },
+      {
+        q: 'How does decentralized insurance differ from traditional insurance?',
+        opts: ['It\'s always free', 'Claims are assessed by token holders or automated systems rather than insurance companies', 'It covers everything with no exclusions', 'It requires government approval'],
+        correct: 1,
+        explanation: 'Decentralized insurance uses token holder voting, expert panels, or automated oracles to assess claims, rather than relying on traditional insurance company claim adjusters.'
+      },
+      {
+        q: 'When might DeFi insurance be most cost-effective?',
+        opts: ['For all positions regardless of size', 'For large positions in newer or riskier protocols', 'Never, it\'s always too expensive', 'Only for government-approved protocols'],
+        correct: 1,
+        explanation: 'Insurance is typically most cost-effective for large positions where the potential loss would be significant, especially in newer protocols with higher risk profiles.'
+      },
+      {
+        q: 'What should you consider when evaluating whether to buy DeFi insurance?',
+        opts: ['Only the premium cost', 'The size of your position, protocol risk level, and insurance cost relative to potential loss', 'Whether your friends have insurance', 'The color of the protocol\'s website'],
+        correct: 1,
+        explanation: 'Insurance decisions should consider position size, protocol risk assessment, premium costs relative to potential losses, and your overall risk management strategy.'
+      },
+      {
+        q: 'What is an alternative to buying insurance for managing DeFi risks?',
+        opts: ['Ignoring all risks', 'Diversification across multiple protocols and position sizing', 'Only using centralized exchanges', 'Avoiding DeFi completely'],
+        correct: 1,
+        explanation: 'Diversification across multiple protocols, appropriate position sizing, and using battle-tested protocols can be alternative risk management strategies to purchasing insurance.'
+      }
+    ]
+  }
+};
+
+function openModule(key) {
+  if (!checkPrerequisites(key)) {
+    alert('Please complete the prerequisite modules first!');
+    return;
+  }
+
+  if (!userProgress[key] || !userProgress[key].started) {
+    trackAnalytics('module_started');
+    if (!userProgress[key]) userProgress[key] = {};
+    userProgress[key].started = true;
+    userProgress[key].startTime = Date.now();
+    userProgress[key].questionsCorrect = 0;
+    saveProgress();
+  }
+  
+  const m = MODULES[key]; 
+  if(!m) return;
+  
+  quizCtx = { moduleKey:key, selected:null, currentQuestion: 0, totalQuestions: m.quiz.length };
+  
+  $('mTitle').textContent = m.title;
+  $('mSub').textContent = `${m.difficulty} • ${m.estimatedTime}`;
+  
+  let contentHtml = `<div class="lesson-content">
+    <p style="font-size:16px;margin-bottom:20px;line-height:1.6">${m.content.introduction}</p>`;
+  
+  // Render concepts
+  m.content.concepts.forEach(concept => {
+    contentHtml += `
+      <div class="concept-box">
+        <h4>${concept.title}</h4>
+        <div style="white-space:pre-line;margin-bottom:12px">${concept.explanation}</div>
+        ${concept.example ? `<div class="example-box">${concept.example}</div>` : ''}
+      </div>
+    `;
+  });
+  
+  // Render key takeaways
+  contentHtml += `
+    <div class="takeaways">
+      <h4>Key Takeaways</h4>
+      <ul>
+        ${m.content.keyTakeaways.map(takeaway => `<li>${takeaway}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+  
+  // Render quiz
+  contentHtml += `
+    <div class="quiz">
+      <h3>Knowledge Check</h3>
+      <div style="margin-bottom:15px">Question <span id="questionCounter">1</span> of ${m.quiz.length}</div>
+      <div id="questionText" style="font-weight:600;margin-bottom:15px"></div>
+      <div id="questionOptions"></div>
+      <div id="quizExplanation" class="quiz-explanation"></div>
+    </div>
+  </div>`;
+  
+  $('mBody').innerHTML = contentHtml;
+  showCurrentQuestion();
+  $('modal').classList.add('active');
+}
+
+function showCurrentQuestion() {
+  const m = MODULES[quizCtx.moduleKey];
+  const question = m.quiz[quizCtx.currentQuestion];
+  
+  $('questionCounter').textContent = quizCtx.currentQuestion + 1;
+  $('questionText').textContent = question.q;
+  
+  const optionsHtml = question.opts.map((t,i)=>
+    `<div class="opt" data-i="${i}" tabindex="0" role="button">${t}</div>`
+  ).join('');
+  $('questionOptions').innerHTML = optionsHtml;
+  
+  // Reset selection and UI state
+  quizCtx.selected = null;
+  $('quizExplanation').style.display = 'none';
+  $('mNext').disabled = false;
+  $('mNext').textContent = 'Submit Answer';
+  
+  // Add click handlers
+  const opts = $('questionOptions').querySelectorAll('.opt');
+  opts.forEach((opt, i) => {
+    opt.onclick = () => selectOption(i);
+    opt.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectOption(i);
+      }
+    });
+  });
+}
+
+function selectOption(index) {
+  document.querySelectorAll('#questionOptions .opt').forEach(x=>x.classList.remove('selected'));
+  $('questionOptions').querySelectorAll('.opt')[index].classList.add('selected'); 
+  quizCtx.selected = index;
+}
+
+function showNextModulePrompt(nextModuleKey) {
+  const nextModule = MODULES[nextModuleKey];
+  if (!nextModule) return;
+  
+  const promptDiv = document.createElement('div');
+  promptDiv.style.cssText = `
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: var(--panel); border: 2px solid var(--primary); border-radius: 16px;
+    padding: 24px; text-align: center; z-index: 1001; max-width: 400px; width: 90%;
+    animation: celebrateIn 0.5s ease-out;
+  `;
+  
+  promptDiv.innerHTML = `
+    <div style="font-size:32px;margin-bottom:16px">🚀</div>
+    <div style="font-weight:800;margin-bottom:12px;color:var(--primary)">Ready for the Next Challenge?</div>
+    <div style="color:var(--muted);margin-bottom:20px">Continue your learning journey with<br><strong>${nextModule.title}</strong></div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button id="skipNext" class="btn">Maybe Later</button>
+      <button id="startNext" class="btn primary">Start Now!</button>
+    </div>
+  `;
+  
+  document.body.appendChild(promptDiv);
+  
+  promptDiv.querySelector('#startNext').onclick = () => {
+    document.body.removeChild(promptDiv);
+    openModule(nextModuleKey);
+  };
+  
+  promptDiv.querySelector('#skipNext').onclick = () => {
+    document.body.removeChild(promptDiv);
+  };
+  
+  setTimeout(() => {
+    if (document.body.contains(promptDiv)) {
+      document.body.removeChild(promptDiv);
+    }
+  }, 10000);
+}
+
+/* --------------------------- Wallet Detection & Selection --------------------------- */
+function detectWallets() {
+  const wallets = [];
+  
+  if (window.ethereum?.isMetaMask) {
+    wallets.push({
+      name: 'MetaMask',
+      icon: '🦊',
+      provider: window.ethereum,
+      id: 'metamask',
+      mobile: true,
+      deepLink: 'https://metamask.app.link/dapp/pawsinpeace.io/game/'
+    });
+  }
+  
+  if (window.ethereum?.isTrust) {
+    wallets.push({
+      name: 'Trust Wallet',
+      icon: '🔷',
+      provider: window.ethereum,
+      id: 'trust',
+      mobile: true,
+      deepLink: 'https://link.trustwallet.com/open_url?coin_id=60&url=https://pawsinpeace.io/game/'
+    });
+  }
+  
+  if (window.ethereum?.isCoinbaseWallet) {
+    wallets.push({
+      name: 'Coinbase Wallet',
+      icon: '🔵',
+      provider: window.ethereum,
+      id: 'coinbase',
+      mobile: true,
+      deepLink: 'https://go.cb-w.com/dapp?cb_url=https://pawsinpeace.io/game/'
+    });
+  }
+  
+  if (window.ethereum?.isRabby) {
+    wallets.push({
+      name: 'Rabby',
+      icon: '🐰', 
+      provider: window.ethereum,
+      id: 'rabby',
+      mobile: false
+    });
+  }
+  
+  if (window.phantom?.ethereum) {
+    wallets.push({
+      name: 'Phantom',
+      icon: '👻',
+      provider: window.phantom.ethereum,
+      id: 'phantom',
+      mobile: true,
+      deepLink: 'https://phantom.app/ul/browse/https://pawsinpeace.io/game/'
+    });
+  }
+  
+  if (window.ethereum && wallets.length === 0) {
+    wallets.push({
+      name: 'Web3 Wallet',
+      icon: '🔗',
+      provider: window.ethereum,
+      id: 'generic',
+      mobile: true
+    });
+  }
+  
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  if (isMobile && wallets.length === 0) {
+    wallets.push(
+      {
+        name: 'MetaMask',
+        icon: '🦊',
+        id: 'metamask-mobile',
+        mobile: true,
+        deepLink: 'https://metamask.app.link/dapp/pawsinpeace.io/game/',
+        needsInstall: true
+      },
+      {
+        name: 'Trust Wallet',
+        icon: '🔷',
+        id: 'trust-mobile', 
+        mobile: true,
+        deepLink: 'https://link.trustwallet.com/open_url?coin_id=60&url=https://pawsinpeace.io/game/',
+        needsInstall: true
+      }
+    );
+  }
+  
+  return wallets;
+}
+
+function showWalletSelector() {
+  const wallets = detectWallets();
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  if (wallets.length === 0) {
+    flash($('helpMsg'),'No wallet detected. Please install MetaMask, Trust Wallet, or another Web3 wallet.','err'); 
+    return;
+  }
+  
+  if (wallets.length === 1 && wallets[0].provider && !wallets[0].needsInstall) {
+    connectWithProvider(wallets[0].provider, wallets[0].name);
+    return;
+  }
+  
+  const selectorHTML = `
+    <div class="modal active" id="walletSelector">
+      <div class="modal-inner" style="max-width: 450px;">
+        <div class="modal-h">
+          <div style="font-weight:800; font-size:20px;">Choose Your Wallet</div>
+          <div class="muted" style="margin-top:6px; font-size:16px;">Select which wallet to connect with</div>
+        </div>
+        <div class="modal-b">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            ${wallets.map(wallet => `
+              <button class="wallet-option" data-wallet="${wallet.id}" style="
+                display:flex;align-items:center;gap:16px;padding:20px;
+                background:var(--panel);border:2px solid #1f3653;border-radius:16px;
+                color:var(--text);cursor:pointer;transition:all 0.2s;width:100%;
+                font-size:16px;
+              ">
+                <span style="font-size:32px">${wallet.icon}</span>
+                <div style="text-align:left;flex:1">
+                  <div style="font-weight:700;font-size:18px">${wallet.name}</div>
+                  <div style="font-size:14px;color:var(--muted);margin-top:2px">
+                    ${wallet.needsInstall ? 'Open in wallet app' : 'Connect with ' + wallet.name}
+                  </div>
+                </div>
+                ${wallet.needsInstall ? '<div style="color:var(--muted);font-size:12px">↗</div>' : ''}
+              </button>
+            `).join('')}
+          </div>
+          ${isMobile ? `
+            <div style="margin-top:16px;padding:16px;background:#0e1e33;border-radius:12px;font-size:14px;color:var(--muted)">
+              <strong>Mobile Tip:</strong> If you don't see your wallet, try opening this page directly in your wallet's browser.
+            </div>
+          ` : ''}
+        </div>
+        <div class="modal-f">
+          <button id="cancelWalletSelect" class="btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const existing = document.getElementById('walletSelector');
+  if (existing) existing.remove();
+  
+  document.body.insertAdjacentHTML('beforeend', selectorHTML);
+  
+  document.getElementById('cancelWalletSelect').onclick = () => {
+    document.getElementById('walletSelector').remove();
+  };
+  
+  document.querySelectorAll('.wallet-option').forEach((btn) => {
+    const walletId = btn.dataset.wallet;
+    const selectedWallet = wallets.find(w => w.id === walletId);
+    
+    btn.onmouseenter = () => btn.style.borderColor = 'var(--primary)';
+    btn.onmouseleave = () => btn.style.borderColor = '#1f3653';
+    
+    btn.onclick = () => {
+      document.getElementById('walletSelector').remove();
+      
+      if (selectedWallet.needsInstall || !selectedWallet.provider) {
+        window.open(selectedWallet.deepLink, '_blank');
+        flash($('helpMsg'), `Opening ${selectedWallet.name}. Please approve the connection in your wallet app.`, 'ok');
+      } else {
+        connectWithProvider(selectedWallet.provider, selectedWallet.name);
+      }
+    };
+  });
+}
+
+/* --------------------------- Connect wallet --------------------------- */
+async function connect(){
+  showWalletSelector();
+}
+
+async function connectWithProvider(provider, walletName) {
+  if (!provider) {
+    flash($('helpMsg'), 'Wallet provider not available. Please try opening this page in your wallet browser.', 'err');
+    return;
+  }
+  
+  try {
+    trackAnalytics('session_start');
+    
+    web3 = new Web3(provider);
+    initializeAddresses(web3);
+    
+    await provider.request({ method:'eth_requestAccounts' });
+
+    const chainId = await provider.request({ method:'eth_chainId' });
+    if(chainId !== CHAIN_ID_HEX){
+      try{
+        await provider.request({ method:'wallet_switchEthereumChain', params:[{ chainId: CHAIN_ID_HEX }] });
+      }catch(e){
+        if(e.code === 4902){
+          await provider.request({ method:'wallet_addEthereumChain', params:[NET_PARAMS] });
+        }else{ throw e; }
+      }
+    }
+
+    const accts = await web3.eth.getAccounts();
+    account = web3.utils.toChecksumAddress(accts[0]);
+
+    contracts.empire  = new web3.eth.Contract(ERC20_ABI, ADDR.EMPIRE);
+    contracts.profile = new web3.eth.Contract(PROFILE_ABI, ADDR.PLAYER_PROFILE);
+    contracts.game    = new web3.eth.Contract(GAME_ABI, ADDR.GAME_MANAGER);
+    contracts.quest   = new web3.eth.Contract(QUEST_ABI, ADDR.QUEST_MANAGER);
+
+    $('btnConnect').style.display='none';
+    $('btnDisconnect').style.display='inline-block';
+    
+    await refreshUI();
+    loadWalletProgress(account);
+    updateProgressDisplay();
+    
+    flash($('helpMsg'),`Connected with ${walletName}: ${account.slice(0,6)}…${account.slice(-4)}`,'ok');
+    
+  } catch(err) {
+    console.error('Connection error:', err);
+    flash($('helpMsg'), err?.message || 'Connection failed. Please try again.','err');
+  }
+}
+
+function disconnect(){
+  trackAnalytics('session_end');
+  
+  if (account) saveWalletProgress(account);
+  
+  account=null; web3=null; contracts={}; ADDR = {};
+  userProgress = {};
+  updateProgressDisplay();
+  
+  $('btnConnect').style.display='inline-block';
+  $('btnDisconnect').style.display='none';
+  
+  $('hasProfile').textContent='Connect'; $('hasProfile').className='pill';
+  $('profLevel').textContent='—'; $('profXP').textContent='—'; $('profQuests').textContent='—'; $('profType').textContent='—';
+  $('isReg').textContent='Connect wallet'; $('isReg').className='pill';
+  $('dailyAvail').textContent='Connect wallet'; $('dailyAvail').className='pill';
+  $('cooldown').textContent='—'; $('ethBal').textContent='0.0000'; $('empBal').textContent='0.00';
+  $('questsBox').innerHTML = '<div class="muted">Connect wallet to load quests…</div>';
+  $('actionMsg').style.display='none';
+}
+
+/* ----------------------------- UI Refresh ----------------------------- */
+async function refreshUI(){
+  if(!account || !web3) return;
+
+  try{
+    // Show loading states
+    $('ethBal').parentElement.classList.add('loading');
+    $('empBal').parentElement.classList.add('loading');
+
+    // Fetch real balances
+    const [ethWei, emp] = await Promise.all([
+      web3.eth.getBalance(account),
+      contracts.empire.methods.balanceOf(account).call().catch(() => '0')
+    ]);
+    
+    // Update balance displays
+    $('ethBal').textContent = (+web3.utils.fromWei(ethWei,'ether')).toFixed(4);
+    $('empBal').textContent = (+web3.utils.fromWei(emp,'ether')).toFixed(2);
+    
+    // Remove loading states
+    $('ethBal').parentElement.classList.remove('loading');
+    $('empBal').parentElement.classList.remove('loading');
+
+    // Fetch and display profile data
+    try {
+      const tokenId = await contracts.profile.methods.playerToTokenId(account).call();
+      const hasProfile = tokenId && tokenId !== "0";
+      
+      $('hasProfile').textContent = hasProfile ? 'Yes' : 'No';
+      $('hasProfile').className = 'pill ' + (hasProfile ? 'ok' : '');
+      
+      if (hasProfile) {
+        const profile = await contracts.profile.methods.getPlayerProfile(account).call();
+        $('profLevel').textContent = profile.level || '1';
+        $('profXP').textContent = profile.experience || '0';
+        $('profQuests').textContent = profile.totalQuestsCompleted || '0';
+        $('profType').textContent = profile.empireType || 'Student';
+      } else {
+        // Reset profile display for unregistered users
+        $('profLevel').textContent = '—';
+        $('profXP').textContent = '—';
+        $('profQuests').textContent = '—';
+        $('profType').textContent = '—';
+      }
+    } catch (profileError) {
+      console.warn('Profile contract not available:', profileError);
+      $('hasProfile').textContent = 'Unavailable';
+      $('hasProfile').className = 'pill';
+    }
+
+    // Fetch and display game status
+    try {
+      const [isRegistered, isEligible, cooldownPeriod, lastClaim] = await Promise.all([
+        contracts.game.methods.isRegistered(account).call(),
+        contracts.game.methods.isEligibleForDailyBonus(account).call(),
+        contracts.game.methods.dailyCooldown().call(),
+        contracts.game.methods.lastDailyClaim(account).call()
+      ]);
+
+      // Update registration status
+      $('isReg').textContent = isRegistered ? 'Yes' : 'No';
+      $('isReg').className = 'pill ' + (isRegistered ? 'ok' : '');
+      
+      // Update daily bonus status
+      $('dailyAvail').textContent = isEligible ? 'Available' : 'Claimed';
+      $('dailyAvail').className = 'pill ' + (isEligible ? 'ok' : '');
+
+      // Calculate and display cooldown
+      if (!isEligible && lastClaim > 0) {
+        const now = Math.floor(Date.now() / 1000);
+        const nextClaim = parseInt(lastClaim) + parseInt(cooldownPeriod);
+        const remainingTime = Math.max(0, nextClaim - now);
+        $('cooldown').textContent = remainingTime > 0 ? fmtDuration(remainingTime) : 'Ready';
+      } else {
+        $('cooldown').textContent = isEligible ? 'Ready now' : 'Check back later';
+      }
+
+      // Update button states
+      $('btnRegister').disabled = isRegistered;
+      $('btnDaily').disabled = !isRegistered || !isEligible;
+      
+    } catch (gameError) {
+      console.warn('Game contract not available:', gameError);
+      $('isReg').textContent = 'Unavailable';
+      $('dailyAvail').textContent = 'Unavailable';
+      $('cooldown').textContent = 'Contract unavailable';
+    }
+    
+    // Load available quests
+    await loadQuests();
+    
+  } catch (error) {
+    console.warn('RefreshUI error:', error);
+    flash($('helpMsg'), 'Some contract features may be unavailable on testnet', 'err');
+  }
+}
+
+/* ----------------------------- Load Quests ----------------------------- */
+async function loadQuests() {
+  if (!contracts.quest) return;
+  
+  try {
+    $('questsBox').innerHTML = '<div class="loading">Loading quests...</div>';
+    
+    const totalQuests = await contracts.quest.methods.getTotalQuests().call();
+    let questsHTML = '';
+    
+    if (totalQuests > 0) {
+      for (let i = 1; i <= Math.min(totalQuests, 5); i++) {
+        try {
+          const quest = await contracts.quest.methods.getQuest(i).call();
+          if (quest.isActive) {
+            const expReward = quest.experienceReward || 0;
+            const tokenReward = web3.utils.fromWei(quest.tokenReward || '0', 'ether');
+            
+            questsHTML += `
+              <div class="quest-card">
+                <div class="quest-title">${quest.title || `Quest #${i}`}</div>
+                <div class="quest-desc">${quest.description || 'Complete this quest to earn rewards'}</div>
+                <div class="quest-rewards">Rewards: ${expReward} XP + ${parseFloat(tokenReward).toFixed(0)} EMPIRE</div>
+                <div class="quest-meta">
+                  <div class="quest-tag">Level ${quest.minLevel || 1}+</div>
+                  <div class="quest-tag">${quest.questType || 'General'}</div>
+                  ${quest.isDaily ? '<div class="quest-tag">Daily</div>' : ''}
+                </div>
+                <button class="btn primary" onclick="attemptQuest(${i})" style="width:100%;margin-top:8px">
+                  Complete Quest
+                </button>
+              </div>
+            `;
+          }
+        } catch (err) {
+          console.warn(`Could not load quest ${i}:`, err);
+        }
+      }
+    }
+    
+    if (questsHTML) {
+      $('questsBox').innerHTML = questsHTML;
+    } else {
+      $('questsBox').innerHTML = `
+        <div class="muted">
+          <div style="margin-bottom:8px"><b>Educational Quests Available</b></div>
+          <div style="font-size:12px">Complete learning modules to unlock interactive challenges!</div>
+          <div style="margin-top:8px">
+            <button class="btn primary" onclick="openModule('wallets')" style="width:100%">Start Learning</button>
+          </div>
+        </div>
+      `;
+    }
+  } catch (err) {
+    $('questsBox').innerHTML = `
+      <div class="muted">
+        <div style="margin-bottom:8px"><b>Educational Quests Available</b></div>
+        <div style="font-size:12px">Complete learning modules to unlock interactive challenges!</div>
+        <div style="margin-top:8px">
+          <button class="btn primary" onclick="openModule('wallets')" style="width:100%">Start Learning</button>
+        </div>
+      </div>
+    `;
+    console.warn('Quest loading error (contracts may not be deployed):', err);
+  }
+}
+
+async function attemptQuest(questId) {
+  if (!account) return;
+  
+  trackAnalytics('quest_attempted');
+  
+  try {
+    const proofHash = web3.utils.keccak256(`quest_${questId}_${account}_${Date.now()}`);
+    const tx = await contracts.quest.methods.completeQuest(
+      questId, 
+      proofHash, 
+      `Educational completion by ${account}`
+    ).send({ from: account });
+    
+    flash($('actionMsg'), `Quest completed! TX: ${tx.transactionHash.slice(0,8)}...`, 'ok');
+    setTimeout(() => {
+      refreshUI();
+    }, 2000);
+  } catch (err) {
+    flash($('actionMsg'), err?.message || 'Quest completion failed', 'err');
+  }
+}
+
+/* ----------------------------- Actions -------------------------------- */
+async function registerPlayer(){
+  if(!account) return;
+  try{
+    $('actionMsg').className='status'; $('actionMsg').style.display='block'; $('actionMsg').textContent='Registering…';
+    const tx = await contracts.game.methods.registerPlayer("Academy Student","").send({from:account});
+    flash($('actionMsg'),`Registered! Welcome to Empire Academy. TX: ${tx.transactionHash.slice(0,8)}...`,'ok');
+    setTimeout(refreshUI,2000);
+  }catch(err){
+    flash($('actionMsg'), err?.message || 'Registration failed','err');
+  }
+}
+
+async function claimDaily(){
+  if(!account) return;
+  try{
+    $('actionMsg').className='status'; $('actionMsg').style.display='block'; $('actionMsg').textContent='Claiming daily bonus…';
+    const tx = await contracts.game.methods.claimDailyBonus().send({from:account});
+    flash($('actionMsg'),`Daily bonus claimed! TX: ${tx.transactionHash.slice(0,8)}...`,'ok');
+    setTimeout(refreshUI,2000);
+  }catch(err){
+    flash($('actionMsg'), err?.message || 'Claim failed','err');
+  }
+}
+
+async function addEmpire(){
+  if(!window.ethereum || !ADDR.EMPIRE) return;
+  try{
+    const added = await window.ethereum.request({
+      method:'wallet_watchAsset',
+      params:{ type:'ERC20', options:{ address: ADDR.EMPIRE, symbol:'EMPIRE', decimals:18 } }
+    });
+    if(added){ flash($('helpMsg'),'EMPIRE token added to MetaMask.','ok'); }
+  }catch(err){
+    flash($('helpMsg'),`Add token manually: ${ADDR.EMPIRE || ADDR_RAW.EMPIRE}`,'err');
+  }
+}
+
+async function addNetwork(){
+  if(!window.ethereum) return;
+  try{
+    await window.ethereum.request({ method:'wallet_addEthereumChain', params:[NET_PARAMS] });
+    flash($('helpMsg'),'Arbitrum Sepolia network added successfully.','ok');
+  }catch(err){
+    flash($('helpMsg'),'Failed to add network.','err');
+  }
+}
+
+async function diagnostics(){
+  if(!web3){ flash($('helpMsg'),'Connect wallet first.','err'); return; }
+  try{
+    const chainId = await web3.eth.getChainId();
+    const balance = await web3.eth.getBalance(account);
+    const isCorrectNetwork = chainId === 421614;
+    
+    flash($('helpMsg'), 
+      `Account: ${account.slice(0,6)}...${account.slice(-4)} • Chain: ${chainId} • ETH: ${(+web3.utils.fromWei(balance,'ether')).toFixed(4)}`,
+      isCorrectNetwork ? 'ok' : 'err'
+    );
+  }catch(e){
+    flash($('helpMsg'),'Diagnostics failed.','err');
+  }
+}
+
+function showAnalytics() {
+  const panel = $('analyticsPanel');
+  const content = $('analyticsContent');
+  
+  const sessionsText = analytics.sessions > 0 ? `${analytics.sessions} sessions` : 'First session';
+  const timeText = analytics.totalTimeSpent > 60 ? 
+    `${Math.round(analytics.totalTimeSpent / 60)}m total` : 
+    `${Math.round(analytics.totalTimeSpent)}s total`;
+  
+  const completed = Object.keys(userProgress).filter(k => userProgress[k] && userProgress[k].completed).length;
+  const total = Object.keys(MODULES).length;
+  const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+  content.innerHTML = `
+    <div style="font-size:13px;line-height:1.4">
+      <div><strong>📊 Learning Analytics</strong></div>
+      <hr style="margin:8px 0;border:none;height:1px;background:#1f3653">
+      <div>📚 ${completed}/${total} modules completed (${completionRate}%)</div>
+      <div>⚡ ${analytics.questsAttempted} quests attempted</div>
+      <div>⏱️ ${timeText}</div>
+      <div>🔄 ${sessionsText}</div>
+      ${account ? `<div style="margin-top:8px;font-size:11px;color:var(--muted)">Wallet: ${account.slice(0,6)}...${account.slice(-4)}</div>` : ''}
+      <div style="margin-top:8px;font-size:11px;color:var(--muted)">
+        ${account ? 'Progress saved to wallet' : 'Progress saved locally'}
+      </div>
+    </div>
+  `;
+  
+  panel.style.display = 'block';
+}
+
+/* --------------------------- Modal / Quiz ------------------------------ */
+$('mClose').onclick = ()=> $('modal').classList.remove('active');
+$('celebrationClose').onclick = ()=> $('celebration').classList.remove('active');
+$('closeAnalytics').onclick = ()=> $('analyticsPanel').style.display = 'none';
+
+$('mNext').onclick = function submitAnswer() {
+  const m = MODULES[quizCtx.moduleKey]; 
+  if(!m) return;
+  const currentQ = m.quiz[quizCtx.currentQuestion];
+  
+  if(quizCtx.selected === null) { 
+    alert('Please select an answer'); 
+    return; 
+  }
+  
+  const nodes = document.querySelectorAll('#questionOptions .opt');
+  const isCorrect = quizCtx.selected === currentQ.correct;
+  
+  $('mNext').disabled = true;
+  
+  nodes.forEach((n,i)=> {
+    if (i === currentQ.correct) {
+      n.classList.add('correct');
+    } else if (i === quizCtx.selected && !isCorrect) {
+      n.classList.add('incorrect');
+    }
+  });
+  
+  const explanation = $('quizExplanation');
+  explanation.style.display = 'block';
+  explanation.style.background = isCorrect ? '#0b2a18' : '#2a1111';
+  explanation.style.borderColor = isCorrect ? '#1f6a3b' : '#7f1d1d';
+  explanation.style.color = isCorrect ? '#86efac' : '#fecaca';
+  
+  if (isCorrect) {
+    if (!userProgress[quizCtx.moduleKey]) userProgress[quizCtx.moduleKey] = {};
+    if (!userProgress[quizCtx.moduleKey].questionsCorrect) userProgress[quizCtx.moduleKey].questionsCorrect = 0;
+    userProgress[quizCtx.moduleKey].questionsCorrect++;
+    saveProgress();
+    
+    explanation.innerHTML = `✅ <strong>Correct!</strong> ${currentQ.explanation}`;
+    
+    if (quizCtx.currentQuestion >= quizCtx.totalQuestions - 1) {
+      userProgress[quizCtx.moduleKey].completed = true;
+      userProgress[quizCtx.moduleKey].completedAt = Date.now();
+      userProgress[quizCtx.moduleKey].score = Math.round((userProgress[quizCtx.moduleKey].questionsCorrect / quizCtx.totalQuestions) * 100);
+      
+      trackAnalytics('module_completed');
+      saveProgress();
+      
+      $('mNext').textContent = 'Complete Module';
+      $('mNext').disabled = false;
+      $('mNext').onclick = function() {
+        $('modal').classList.remove('active');
+        updateProgressDisplay();
+        showCelebration(quizCtx.moduleKey);
+        
+        setTimeout(() => {
+          const moduleKeys = Object.keys(MODULES);
+          const currentIndex = moduleKeys.indexOf(quizCtx.moduleKey);
+          if (currentIndex < moduleKeys.length - 1) {
+            const nextModule = moduleKeys[currentIndex + 1];
+            showNextModulePrompt(nextModule);
+          }
+        }, 3500);
+      };
+    } else {
+      $('mNext').textContent = 'Next Question';
+      $('mNext').disabled = false;
+      
+      setTimeout(() => {
+        quizCtx.currentQuestion++;
+        showCurrentQuestion();
+        $('mNext').onclick = submitAnswer;
+      }, 2000);
+    }
+  } else {
+    explanation.innerHTML = `❌ <strong>Incorrect.</strong> ${currentQ.explanation}`;
+    $('mNext').textContent = 'Try Again';
+    $('mNext').disabled = false;
+    $('mNext').onclick = function() {
+      nodes.forEach(n => {
+        n.classList.remove('selected', 'correct', 'incorrect');
+      });
+      explanation.style.display = 'none';
+      quizCtx.selected = null;
+      $('mNext').textContent = 'Submit Answer';
+      $('mNext').onclick = submitAnswer;
+    };
+  }
+};
+
+/* ------------------------------ Events -------------------------------- */
+$('btnConnect').onclick = connect;
+$('btnDisconnect').onclick = disconnect;
+$('btnRefresh').onclick = refreshUI;
+$('btnReloadQuests').onclick = loadQuests;
+$('btnRegister').onclick = registerPlayer;
+$('btnDaily').onclick = claimDaily;
+$('btnAddToken').onclick = addEmpire;
+$('btnAddNet').onclick = addNetwork;
+$('btnDiag').onclick = diagnostics;
+$('btnShowAnalytics').onclick = showAnalytics;
+
+// Module card click handlers
+document.addEventListener('click', (e) => {
+  const moduleCard = e.target.closest('[data-module]');
+  if (moduleCard && !moduleCard.classList.contains('locked')) {
+    const moduleKey = moduleCard.dataset.module;
+    openModule(moduleKey);
+  }
+});
+
+// Countdown timer
+setInterval(async ()=>{
+  if(!account || !contracts.game) return;
+  try{
+    const eligible = await contracts.game.methods.isEligibleForDailyBonus(account).call();
+    if(eligible){ 
+      $('cooldown').textContent='Ready now'; 
+      $('dailyAvail').textContent='Yes'; 
+      $('dailyAvail').className='pill ok'; 
+      $('btnDaily').disabled=false; 
+      return; 
+    }
+    const [cd,last] = await Promise.all([
+      contracts.game.methods.dailyCooldown().call(),
+      contracts.game.methods.lastDailyClaim(account).call()
+    ]);
+    const now = Math.floor(Date.now()/1000);
+    const target = (+last)+(+cd);
+    $('cooldown').textContent = fmtDuration(Math.max(0,target-now));
+  }catch(_){}
+}, 30000);
+
+// Initialize on load
+window.addEventListener('load', () => {
+  // Initialize language system with flag buttons
+  const savedLang = localStorage.getItem('preferred_language') || 'en';
+  currentLanguage = savedLang;
+  
+  // Setup language button events
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.onclick = function() {
+      // Remove active state from all buttons
+      document.querySelectorAll('.lang-btn').forEach(b => {
+        b.style.background = 'transparent';
+      });
+      
+      // Set active state for clicked button
+      this.style.background = '#3b82f6';
+      
+      // Translate page
+      const lang = this.getAttribute('data-lang');
+      translatePage(lang);
+    };
+    
+    // Set initial active state
+    if (btn.getAttribute('data-lang') === savedLang) {
+      btn.style.background = '#3b82f6';
+    }
+  });
+  
+  // Initial translation
+  translatePage(savedLang);
+  
+  // Load analytics from localStorage
+  analytics = JSON.parse(localStorage.getItem('defi_academy_analytics') || '{"modulesStarted":0,"modulesCompleted":0,"questsAttempted":0,"totalTimeSpent":0,"sessions":0}');
+  
+  // Load progress (either wallet-specific or general)
+  userProgress = JSON.parse(localStorage.getItem('defi_academy_progress') || '{}');
+  updateProgressDisplay();
+  
+  const hasOfflineProgress = Object.keys(userProgress).length > 0;
+  if (hasOfflineProgress && !account) {
+    setTimeout(() => {
+      flash($('helpMsg'), 'Connect wallet to save your progress permanently', 'ok');
+    }, 2000);
+  }
+});
+
+// Global function exposure for quest buttons
+window.attemptQuest = attemptQuest;
+window.openModule = openModule;
+
+console.log('🎓 Empire DeFi Academy loaded - Complete educational platform with Web3 integration');
+</script>
+</body>
+</html>
