@@ -6,7 +6,7 @@
 A comprehensive Web3 education platform designed to provide underserved communities worldwide with practical DeFi knowledge and hands-on experience on Arbitrum.
 
 ## 🚀 Live Demo
-[Try the Platform](https://yourusername.github.io/blockchain-inclusion-academy)
+https://dark-souls69.github.io/blockchain-inclusion-academy
 
 ## Features
 - 📚 16+ Progressive Learning Modules
